@@ -261,3 +261,120 @@ body.has-pointer .cursor-glow{opacity:1}
   .noise::after,.ambient-one,.ambient-two,.signal-strip:before,.timeline-dot,.contact-inner:after,.project-icon:after{animation:none}
   .scroll-progress{transition:none}
 }
+
+
+/* Personal motion layer: subtle, performance-friendly interactions. */
+.hero-visual{
+  perspective:1200px;
+  isolation:isolate;
+}
+.hero-visual:before{
+  animation:heroHalo 7s ease-in-out infinite alternate;
+}
+@keyframes heroHalo{
+  0%{transform:translate3d(-8px,8px,0) scale(.94);opacity:.7}
+  100%{transform:translate3d(18px,-14px,0) scale(1.08);opacity:1}
+}
+.hero-visual:after{
+  animation:frameFloat 9s ease-in-out infinite alternate;
+}
+@keyframes frameFloat{
+  0%{transform:rotate(-3deg) translateY(0)}
+  100%{transform:rotate(-1deg) translateY(-10px)}
+}
+.terminal-card{
+  transform-style:preserve-3d;
+  will-change:transform;
+  overflow:hidden;
+}
+.terminal-card:before{
+  z-index:3;
+  opacity:.85;
+}
+.terminal-card:after{
+  animation:terminalGlow 6s ease-in-out infinite alternate;
+}
+@keyframes terminalGlow{
+  0%{transform:translate3d(0,0,0) scale(.92);opacity:.65}
+  100%{transform:translate3d(-25px,18px,0) scale(1.12);opacity:1}
+}
+.terminal-card::selection{background:rgba(87,215,255,.24)}
+.terminal-body{
+  position:relative;
+}
+.terminal-body:after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:48%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(87,215,255,.5),transparent);
+  box-shadow:0 0 18px rgba(87,215,255,.22);
+  opacity:.5;
+  animation:terminalScan 5.5s linear infinite;
+  pointer-events:none;
+}
+@keyframes terminalScan{
+  0%{transform:translateY(-160px);opacity:0}
+  12%{opacity:.55}
+  80%{opacity:.2}
+  100%{transform:translateY(160px);opacity:0}
+}
+.command-grid span{
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;
+}
+.command-grid span:hover{
+  transform:translateY(-3px) scale(1.03);
+  border-color:rgba(87,215,255,.34);
+  box-shadow:0 10px 22px rgba(0,0,0,.2),0 0 20px rgba(87,215,255,.08);
+}
+.signal-strip>div{
+  will-change:transform;
+}
+.signal-strip>div:nth-child(1){animation:signalFloat 5.8s ease-in-out infinite}
+.signal-strip>div:nth-child(2){animation:signalFloat 6.4s ease-in-out -.8s infinite}
+.signal-strip>div:nth-child(3){animation:signalFloat 5.2s ease-in-out -1.2s infinite}
+.signal-strip>div:nth-child(4){animation:signalFloat 6.8s ease-in-out -1.6s infinite}
+@keyframes signalFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+
+/* Desktop project stack: cards stay legible while creating a premium depth sequence. */
+@media(min-width:901px){
+  #projects .section-content{overflow:visible}
+  #projects .project-grid{
+    display:block;
+    position:relative;
+    padding:18px 0 8vh;
+  }
+  #projects .project{
+    position:sticky;
+    top:96px;
+    min-height:330px;
+    margin:0 0 34px;
+    transform-origin:center top;
+    transition:box-shadow .28s ease,border-color .28s ease;
+    will-change:transform,filter;
+  }
+  #projects .project:nth-child(2){top:112px}
+  #projects .project:nth-child(3){top:128px}
+  #projects .project:nth-child(4){top:144px}
+  #projects .project:nth-child(1){z-index:1}
+  #projects .project:nth-child(2){z-index:2}
+  #projects .project:nth-child(3){z-index:3}
+  #projects .project:nth-child(4){z-index:4}
+  #projects .project:hover{
+    box-shadow:0 35px 95px rgba(0,0,0,.4),0 0 55px rgba(86,121,255,.10);
+    border-color:rgba(124,131,255,.38);
+  }
+}
+@media(max-width:900px){
+  .hero-visual:before{animation:none}
+  .hero-visual:after{animation:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-visual:before,.hero-visual:after,.terminal-card:after,.terminal-body:after,
+  .signal-strip>div{animation:none!important}
+}
