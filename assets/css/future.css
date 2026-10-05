@@ -1,5 +1,19 @@
 /* Futuristic visual layer — intentionally additive so the base design remains easy to maintain. */
 
+.scroll-progress{
+  position:fixed;
+  top:0;
+  left:0;
+  z-index:60;
+  width:100%;
+  height:2px;
+  transform-origin:left center;
+  transform:scaleX(0);
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  box-shadow:0 0 14px rgba(87,215,255,.55);
+  pointer-events:none;
+}
+
 .noise{
   overflow:hidden;
 }
@@ -244,4 +258,5 @@ body.has-pointer .cursor-glow{opacity:1}
 @media(prefers-reduced-motion:reduce){
   .noise::after,.ambient-one,.ambient-two,.signal-strip:before,.timeline-dot,.contact-inner:after{animation:none}
   .project-icon:after{animation:none}
+  .scroll-progress{transition:none}
 }
