@@ -132,19 +132,19 @@ if (!reducedMotion && hasLenis) {
     duration: 1.05,
     smoothWheel: true,
     syncTouch: false,
-    autoRaf: false
+    autoRaf: !hasGsap
   });
-
-  const raf = (time) => {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  };
-  requestAnimationFrame(raf);
 
   if (hasGsap) {
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
+  } else {
+    const raf = (time) => {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
   }
 }
 
