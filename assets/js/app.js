@@ -210,3 +210,70 @@ if (!reducedMotion && finePointer) {
     });
   });
 }
+
+
+/* Extra interaction polish */
+if (!reducedMotion && hasGsap) {
+  const heroVisual = document.querySelector('.hero-visual');
+  if (heroVisual) {
+    gsap.to(heroVisual, {
+      yPercent: -4,
+      rotateZ: 0.45,
+      scrollTrigger: {
+        trigger: '.hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1.4
+      }
+    });
+  }
+
+  gsap.utils.toArray('.project').forEach((card, index) => {
+    gsap.fromTo(card,
+      { y: 34, opacity: 0.82, scale: 0.97, rotateX: 2.5 },
+      {
+        y: 0,
+        opacity: 1,
+        scale: 1,
+        rotateX: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 92%',
+          end: 'top 62%',
+          scrub: 0.8
+        }
+      }
+    );
+
+    if (window.innerWidth > 900) {
+      gsap.to(card, {
+        scale: 0.95 - (index * 0.012),
+        filter: 'brightness(0.78)',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 96px',
+          end: 'bottom 180px',
+          scrub: 1.1
+        }
+      });
+    }
+  });
+}
+
+if (!reducedMotion && finePointer) {
+  document.querySelectorAll('.project, .skill, .mini-stats div, .writing-panel').forEach((card) => {
+    card.addEventListener('pointermove', (event) => {
+      const rect = card.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width;
+      const py = (event.clientY - rect.top) / rect.height;
+      card.style.setProperty('--pointer-x', `${px * 100}%`);
+      card.style.setProperty('--pointer-y', `${py * 100}%`);
+    }, { passive: true });
+
+    card.addEventListener('pointerleave', () => {
+      card.style.removeProperty('--pointer-x');
+      card.style.removeProperty('--pointer-y');
+    });
+  });
+}
