@@ -34,16 +34,15 @@ jobs:
           node-version: 20
 
       - name: Build Sandeep 3D Creator page
-        working-directory: 3d
+        working-directory: 3d-src
         run: |
           npm install
           npm run build
 
       - name: Assemble site
         run: |
-          mkdir -p _site/3d
-          cp -r index.html assets _site/
-          cp -r 3d/dist/. _site/3d/
+          mkdir -p _site
+          cp -r index.html assets 3d .nojekyll _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

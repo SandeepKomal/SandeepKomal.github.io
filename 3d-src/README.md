@@ -5,10 +5,13 @@ React + TypeScript + Tailwind CSS + Framer Motion landing page.
 ```bash
 npm install
 npm run dev      # local dev server at http://localhost:5173
-npm run build    # production build into dist/
+npm run build    # production build into ../3d/
 ```
 
-Deployed for free by `.github/workflows/pages.yml` to `https://sandeepkomal.github.io/3d/`
+The build writes the finished page to `../3d/`, which is committed so GitHub Pages can serve it.
+After changing anything here, run `npm run build` and commit the updated `3d/` folder too.
+
+Deployed for free to
 on every push to `main`.
 
 Sections live in `src/sections/`, reusable pieces (FadeIn, Magnet, AnimatedText, buttons) in `src/components/`.
