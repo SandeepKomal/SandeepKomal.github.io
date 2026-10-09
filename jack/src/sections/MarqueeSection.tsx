@@ -1,43 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
+import Scene, { PALETTES } from '../art/Scene';
 
-const GIFS = [
-  'hero-space-voyage-preview-eECLH3Yc.gif',
-  'hero-codenest-preview-Cgppc2qV.gif',
-  'hero-vex-ventures-preview-BczMFIiw.gif',
-  'hero-stellar-ai-v2-preview-DjvxjG3C.gif',
-  'hero-asme-preview-B_nGDnTP.gif',
-  'hero-transform-data-preview-Cx5OU29N.gif',
-  'hero-vitara-preview-Cjz2QYyU.gif',
-  'hero-terra-preview-BFjrCr7T.gif',
-  'hero-skyelite-preview-DHaZIgUv.gif',
-  'hero-aethera-preview-DknSlcTa.gif',
-  'hero-designpro-preview-D8c5_een.gif',
-  'hero-stellar-ai-preview-D3HL6bw1.gif',
-  'hero-xportfolio-preview-D4A8maiC.gif',
-  'hero-orbit-web3-preview-BXt4OttD.gif',
-  'hero-nexora-preview-cx5HmUgo.gif',
-  'hero-evr-ventures-preview-DZxeVFEX.gif',
-  'hero-planet-orbit-preview-DWAP8Z1P.gif',
-  'hero-new-era-preview-CocuDUm9.gif',
-  'hero-wealth-preview-B70idl_u.gif',
-  'hero-luminex-preview-CxOP7ce6.gif',
-  'hero-celestia-preview-0yO3jXO8.gif',
-].map((file) => `https://motionsites.ai/assets/${file}`);
+// Original procedural tiles (no third-party images): each pairs a palette with a layout.
+const TILE_NAMES = [
+  'Orb Study', 'Neon Room', 'Brick Lab', 'Halo', 'Prism', 'Night Drive', 'Bloom',
+  'Monolith', 'Sunset Kit', 'Ring World', 'Soft Cubes', 'Low Poly', 'Glass Form', 'Pulse',
+  'Drift', 'Ember', 'Tide', 'Signal', 'Atlas', 'Candy Shop', 'Echo',
+];
 
-const ROW_ONE = [...GIFS.slice(0, 11), ...GIFS.slice(0, 11), ...GIFS.slice(0, 11)];
-const ROW_TWO = [...GIFS.slice(11), ...GIFS.slice(11), ...GIFS.slice(11)];
+const TILES = TILE_NAMES.map((name, i) => ({ name, palette: PALETTES[i % PALETTES.length], variant: i }));
 
-function Row({ images, transform }: { images: string[]; transform: string }) {
+const ROW_ONE = [...TILES.slice(0, 11), ...TILES.slice(0, 11), ...TILES.slice(0, 11)];
+const ROW_TWO = [...TILES.slice(11), ...TILES.slice(11), ...TILES.slice(11)];
+
+type Tile = (typeof TILES)[number];
+
+function Row({ tiles, transform }: { tiles: Tile[]; transform: string }) {
   return (
     <div className="flex w-max gap-3" style={{ transform, willChange: 'transform' }}>
-      {images.map((src, i) => (
-        <img
-          key={i}
-          src={src}
-          alt=""
-          loading="lazy"
-          className="h-[270px] w-[420px] shrink-0 rounded-2xl object-cover"
-        />
+      {tiles.map((tile, i) => (
+        <div key={i} className="relative h-[270px] w-[420px] shrink-0 overflow-hidden rounded-2xl">
+          <Scene palette={tile.palette} variant={tile.variant} className="h-full w-full" />
+          <span className="absolute bottom-4 left-5 text-lg font-semibold uppercase tracking-wider text-white/90">
+            {tile.name}
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -65,8 +52,8 @@ export default function MarqueeSection() {
 
   return (
     <section ref={ref} className="flex flex-col gap-3 bg-[#0C0C0C] pb-10 pt-24 sm:pt-32 md:pt-40">
-      <Row images={ROW_ONE} transform={`translateX(${offset - 200}px)`} />
-      <Row images={ROW_TWO} transform={`translateX(${-(offset - 200)}px)`} />
+      <Row tiles={ROW_ONE} transform={`translateX(${offset - 200}px)`} />
+      <Row tiles={ROW_TWO} transform={`translateX(${-(offset - 200)}px)`} />
     </section>
   );
 }

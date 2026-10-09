@@ -1,6 +1,7 @@
 import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
+import { HeroOrb } from '../art/Shapes';
 
 const NAV_LINKS = [
   { label: 'About', href: '#about' },
@@ -8,9 +9,6 @@ const NAV_LINKS = [
   { label: 'Projects', href: '#projects' },
   { label: 'Contact', href: '#contact' },
 ];
-
-const PORTRAIT =
-  'https://shrug-person-78902957.figma.site/_components/v2/d24c01ad3a56fc65e942a1f501eb73db42d7cf9a/Rectangle_40443.81459862.png';
 
 export default function HeroSection() {
   return (
@@ -59,7 +57,7 @@ export default function HeroSection() {
             activeTransition="transform 0.3s ease-out"
             inactiveTransition="transform 0.6s ease-in-out"
           >
-            <img src={PORTRAIT} alt="Jack, 3D creator" className="block w-full select-none" draggable={false} />
+            <HeroOrb className="block w-full select-none" />
           </Magnet>
         </FadeIn>
       </div>

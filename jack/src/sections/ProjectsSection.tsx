@@ -2,38 +2,13 @@ import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion
 import { useRef } from 'react';
 import FadeIn from '../components/FadeIn';
 import LiveProjectButton from '../components/LiveProjectButton';
+import Scene, { PALETTES } from '../art/Scene';
 
-const img = (file: string) =>
-  `https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2F${file}.png&w=1280&q=85`;
-
+// Each project shows three original procedural renders: [palette index, layout variant].
 const PROJECTS = [
-  {
-    name: 'Nextlevel Studio',
-    category: 'Client',
-    images: [
-      img('hf_20260412_055344_5eff02e0-87a5-41ce-b64f-eb08da8f33db'),
-      img('hf_20260412_055431_11d841fd-8b41-46a5-82e4-b04f2407a7d8'),
-      img('hf_20260412_055451_e317bf2d-28d4-48cc-86b0-6f72f25b6327'),
-    ],
-  },
-  {
-    name: 'Aura Brand Identity',
-    category: 'Personal',
-    images: [
-      img('hf_20260412_055654_911201c5-36d9-4bc6-bac7-331adfce159f'),
-      img('hf_20260412_055723_5ceda0b8-d9c2-4665-b2e3-83ba19ba76d1'),
-      img('hf_20260412_055753_adc5dcbd-a8e6-49c0-b43a-9b030d835cea'),
-    ],
-  },
-  {
-    name: 'Solaris Digital',
-    category: 'Client',
-    images: [
-      img('hf_20260412_055759_963cfb0b-4bd1-4b0f-9d0a-09bd6cf95b2f'),
-      img('hf_20260412_060108_438f781a-9846-4dcc-89ab-c4e6cb830f5b'),
-      img('hf_20260412_055818_9d062121-ad7e-46b9-999a-1a6a692ef1ee'),
-    ],
-  },
+  { name: 'Nextlevel Studio', category: 'Client', scenes: [[0, 1], [0, 3], [0, 0]] },
+  { name: 'Aura Brand Identity', category: 'Personal', scenes: [[4, 2], [5, 1], [4, 0]] },
+  { name: 'Solaris Digital', category: 'Client', scenes: [[2, 3], [2, 0], [2, 2]] },
 ];
 
 const IMAGE_RADIUS = 'rounded-[40px] sm:rounded-[50px] md:rounded-[60px]';
@@ -53,7 +28,9 @@ function ProjectCard({
 }) {
   const targetScale = 1 - (total - 1 - index) * 0.03;
   const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
-  const [colOneTop, colOneBottom, colTwo] = project.images;
+  const [colOneTop, colOneBottom, colTwo] = project.scenes.map(([palette, variant], i) => (
+    <Scene key={i} palette={PALETTES[palette]} variant={variant} label={`${project.name} render ${i + 1}`} className="h-full w-full" />
+  ));
 
   return (
     <div className="sticky top-24 flex h-[85vh] items-start justify-center md:top-32">
@@ -89,28 +66,15 @@ function ProjectCard({
 
         <div className="flex gap-3 sm:gap-4">
           <div className="flex w-[40%] flex-col gap-3 sm:gap-4">
-            <img
-              src={colOneTop}
-              alt={`${project.name} preview 1`}
-              loading="lazy"
-              className={`w-full object-cover ${IMAGE_RADIUS}`}
-              style={{ height: 'clamp(130px, 16vw, 230px)' }}
-            />
-            <img
-              src={colOneBottom}
-              alt={`${project.name} preview 2`}
-              loading="lazy"
-              className={`w-full object-cover ${IMAGE_RADIUS}`}
-              style={{ height: 'clamp(160px, 22vw, 340px)' }}
-            />
+            <div className={`w-full overflow-hidden ${IMAGE_RADIUS}`} style={{ height: 'clamp(130px, 16vw, 230px)' }}>
+              {colOneTop}
+            </div>
+            <div className={`w-full overflow-hidden ${IMAGE_RADIUS}`} style={{ height: 'clamp(160px, 22vw, 340px)' }}>
+              {colOneBottom}
+            </div>
           </div>
           <div className="w-[60%]">
-            <img
-              src={colTwo}
-              alt={`${project.name} preview 3`}
-              loading="lazy"
-              className={`h-full w-full object-cover ${IMAGE_RADIUS}`}
-            />
+            <div className={`h-full w-full overflow-hidden ${IMAGE_RADIUS}`}>{colTwo}</div>
           </div>
         </div>
       </motion.div>

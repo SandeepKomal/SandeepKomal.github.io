@@ -4,27 +4,27 @@ const SERVICES = [
   {
     name: '3D Modeling',
     description:
-      'Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.',
+      'Precise, production-ready models of products, characters and spaces, built clean so they work in games, ads and real-time scenes.',
   },
   {
     name: 'Rendering',
     description:
-      'High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.',
+      'Studio-grade stills with crafted lighting, materials and camera work that make a concept look finished before it exists.',
   },
   {
     name: 'Motion Design',
     description:
-      'Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.',
+      'Animated sequences and loops that give products and brands rhythm, personality and a story worth watching.',
   },
   {
     name: 'Branding',
     description:
-      'Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.',
+      'Visual identities with depth -- logos, 3D brand marks and asset kits that stay consistent everywhere they appear.',
   },
   {
     name: 'Web Design',
     description:
-      'Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.',
+      'Fast, modern sites that pair strong layouts and typography with interactive 3D moments people remember.',
   },
 ];
 

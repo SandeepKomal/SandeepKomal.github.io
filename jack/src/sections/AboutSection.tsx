@@ -1,30 +1,29 @@
 import FadeIn from '../components/FadeIn';
 import AnimatedText from '../components/AnimatedText';
 import ContactButton from '../components/ContactButton';
-
-const ASSET_BASE = 'https://shrug-person-78902957.figma.site/_components/v2/ebb2b8f25d8e24d5f0a5ca8af4c950de81aa2fd7';
+import { Brick, Moon, Spheres, Torus } from '../art/Shapes';
 
 const DECORATIONS = [
   {
-    src: `${ASSET_BASE}/moon_icon.11395d36.png`,
+    Art: Moon,
     className: 'top-[4%] left-[1%] sm:left-[2%] md:left-[4%] w-[120px] sm:w-[160px] md:w-[210px]',
     delay: 0.1,
     x: -80,
   },
   {
-    src: `${ASSET_BASE}/p59_1.4659672e.png`,
+    Art: Spheres,
     className: 'bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] w-[100px] sm:w-[140px] md:w-[180px]',
     delay: 0.25,
     x: -80,
   },
   {
-    src: `${ASSET_BASE}/lego_icon-1.703bb594.png`,
+    Art: Brick,
     className: 'top-[4%] right-[1%] sm:right-[2%] md:right-[4%] w-[120px] sm:w-[160px] md:w-[210px]',
     delay: 0.15,
     x: 80,
   },
   {
-    src: `${ASSET_BASE}/Group_134-1.2e04f3ce.png`,
+    Art: Torus,
     className: 'bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] w-[130px] sm:w-[170px] md:w-[220px]',
     delay: 0.3,
     x: 80,
@@ -32,7 +31,7 @@ const DECORATIONS = [
 ];
 
 const ABOUT_TEXT =
-  "With more than five years of experience in design, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
+  "I turn ideas into bold 3D worlds -- sculpting objects, lighting scenes and animating stories that make brands impossible to ignore. Every project gets the same obsession with detail, from the first sketch to the final frame. Got something ambitious in mind? Let's make it real.";
 
 export default function AboutSection() {
   return (
@@ -40,9 +39,9 @@ export default function AboutSection() {
       id="about"
       className="relative flex min-h-screen items-center justify-center px-5 py-20 sm:px-8 md:px-10"
     >
-      {DECORATIONS.map((d) => (
-        <FadeIn key={d.src} className={`pointer-events-none absolute ${d.className}`} delay={d.delay} x={d.x} y={0} duration={0.9}>
-          <img src={d.src} alt="" className="block w-full" />
+      {DECORATIONS.map(({ Art, className, delay, x }, i) => (
+        <FadeIn key={i} className={`pointer-events-none absolute ${className}`} delay={delay} x={x} y={0} duration={0.9}>
+          <Art className="block w-full" />
         </FadeIn>
       ))}
 
