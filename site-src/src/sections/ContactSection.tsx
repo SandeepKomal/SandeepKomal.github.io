@@ -3,6 +3,7 @@ import FadeIn from '../components/FadeIn';
 import { LINKS } from '../content';
 
 const CONTACTS = [
+  { label: 'Email', href: LINKS.email },
   { label: 'GitHub', href: LINKS.github },
   { label: 'LinkedIn', href: LINKS.linkedin },
   { label: 'Medium', href: LINKS.medium },
@@ -48,8 +49,7 @@ export default function ContactSection() {
             <a
               key={c.label}
               href={c.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...(c.href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
               className="inline-flex items-center gap-2 rounded-full border-2 border-[#0C0C0C] px-8 py-3 text-sm font-medium uppercase tracking-widest transition-colors duration-200 hover:bg-[#0C0C0C] hover:text-white sm:px-10 sm:py-3.5 sm:text-base"
             >
               {c.label}
