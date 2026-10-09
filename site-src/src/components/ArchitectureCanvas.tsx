@@ -8,12 +8,12 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 // Each node gets its own 3D shape: a gem for source control, a loop for CI/CD, a cloud for AWS,
 // a heptagon prism for Kubernetes, a crystal for security and a radar orb for observability.
 const NODES = [
-  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x1fa8e0, shape: 'gem' },
-  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0x6b4dff, shape: 'loop' },
-  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0xff8a1f, shape: 'cloud' },
-  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x3360ff, shape: 'heptagon' },
-  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x16c47a, shape: 'crystal' },
-  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x18b8e8, shape: 'radar' },
+  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x00e5ff, shape: 'gem' },
+  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0xb026ff, shape: 'loop' },
+  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0xff7a00, shape: 'cloud' },
+  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x2b5bff, shape: 'heptagon' },
+  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x39ff6a, shape: 'crystal' },
+  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x00ffd0, shape: 'radar' },
 ] as const;
 
 type Shape = (typeof NODES)[number]['shape'];
@@ -35,7 +35,13 @@ function makeGlowTexture() {
 }
 
 /** Builds the 3D object for one node, centred on the origin */
-function makeShape(shape: Shape, size: number, material: THREE.Material, track: (d: { dispose: () => void }) => void) {
+function makeShape(
+  shape: Shape,
+  size: number,
+  material: THREE.Material,
+  edgeColor: number,
+  track: (d: { dispose: () => void }) => void,
+) {
   const group = new THREE.Group();
   const add = (geo: THREE.BufferGeometry, edges = false) => {
     track(geo);
@@ -43,10 +49,16 @@ function makeShape(shape: Shape, size: number, material: THREE.Material, track: 
     group.add(mesh);
     if (edges) {
       const edgeGeo = new THREE.EdgesGeometry(geo);
-      const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 });
+      // A lighter tint of the neon colour so facet edges read crisply against the faces
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: new THREE.Color(edgeColor).lerp(new THREE.Color(0xffffff), 0.55),
+        transparent: true,
+        opacity: 0.85,
+      });
       track(edgeGeo);
       track(edgeMat);
-      group.add(new THREE.LineSegments(edgeGeo, edgeMat));
+      // Attach the outline to the mesh so it follows the mesh's own rotation and scale
+      mesh.add(new THREE.LineSegments(edgeGeo, edgeMat));
     }
     return mesh;
   };
@@ -60,14 +72,17 @@ function makeShape(shape: Shape, size: number, material: THREE.Material, track: 
       break;
     }
     case 'cloud': {
-      const puffs: [number, number, number, number][] = [
-        [0, 0.1, 0, 0.62],
-        [-0.55, -0.12, 0, 0.45],
-        [0.55, -0.1, 0, 0.48],
-        [0.2, 0.42, -0.05, 0.4],
-        [-0.25, 0.32, 0.05, 0.36],
+      // Classic cloud silhouette: a flat-bottomed row of puffs with two larger puffs on top
+      const puffs: [number, number, number][] = [
+        [-0.78, -0.18, 0.36],
+        [-0.3, -0.2, 0.42],
+        [0.3, -0.2, 0.42],
+        [0.78, -0.18, 0.36],
+        [-0.32, 0.18, 0.5],
+        [0.25, 0.28, 0.6],
       ];
-      puffs.forEach(([x, y, z, r]) => add(new THREE.SphereGeometry(size * r * 1.25, 32, 24)).position.set(x * size * 1.3, y * size * 1.3, z));
+      puffs.forEach(([x, y, r]) => add(new THREE.SphereGeometry(size * r * 1.25, 40, 28)).position.set(x * size * 1.25, y * size * 1.25, 0));
+      group.scale.z = 0.6;
       break;
     }
     case 'heptagon': {
@@ -118,9 +133,9 @@ export default function ArchitectureCanvas() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0);
-    // Filmic tone mapping keeps highlights soft instead of blown out
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.95;
+    // Neutral tone mapping keeps saturated neon colours true instead of bleaching them
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 1;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -141,8 +156,8 @@ export default function ArchitectureCanvas() {
     pmrem.dispose();
     track(envMap);
     scene.environment = envMap;
-    scene.add(new THREE.AmbientLight(0x8090ff, 0.25));
-    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+    scene.add(new THREE.AmbientLight(0x8090ff, 0.12));
+    const key = new THREE.DirectionalLight(0xffffff, 2.2);
     key.position.set(-3, 5, 6);
     scene.add(key);
     const rim = new THREE.PointLight(0xb600a8, 8, 20, 2);
@@ -163,16 +178,16 @@ export default function ArchitectureCanvas() {
       const material = new THREE.MeshPhysicalMaterial({
         color: node.color,
         emissive: node.color,
-        emissiveIntensity: 0.04,
+        emissiveIntensity: 0,
         metalness: faceted ? 0.15 : 0.3,
         roughness: faceted ? 0.08 : 0.18,
         clearcoat: 1,
         clearcoatRoughness: 0.06,
-        envMapIntensity: 0.7,
+        envMapIntensity: 0.55,
         flatShading: faceted,
       });
       track(material);
-      const body = makeShape(node.shape, node.size * 1.35, material, track);
+      const body = makeShape(node.shape, node.size * 1.35, material, node.color, track);
       holder.add(body);
 
       // Halo behind the object
@@ -180,19 +195,19 @@ export default function ArchitectureCanvas() {
         map: glowTexture,
         color: node.color,
         transparent: true,
-        opacity: 0.16,
+        opacity: 0.07,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
       track(haloMat);
       const halo = new THREE.Sprite(haloMat);
-      halo.scale.setScalar(node.size * 5.5);
+      halo.scale.setScalar(node.size * 4.5);
       halo.position.z = -0.3;
       holder.add(halo);
 
       // Thin orbit ring around each node (the radar node gets a bolder one)
       const orbitGeo = new THREE.TorusGeometry(node.size * 2.1, node.shape === 'radar' ? 0.028 : 0.012, 8, 96);
-      const orbitMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: node.shape === 'radar' ? 0.7 : 0.3 });
+      const orbitMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: node.shape === 'radar' ? 0.6 : 0.25 });
       track(orbitGeo);
       track(orbitMat);
       const orbit = new THREE.Mesh(orbitGeo, orbitMat);
@@ -207,7 +222,7 @@ export default function ArchitectureCanvas() {
       map: glowTexture,
       color: 0x9ff0ff,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.5,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -316,15 +331,19 @@ export default function ArchitectureCanvas() {
             // Flat shapes spin in the screen plane so they never turn edge-on
             n.body.rotation.z = t * 0.6 + i;
             n.body.rotation.y = Math.sin(t * 0.7 + i) * 0.45;
+          } else if (NODES[i].shape === 'cloud') {
+            // The cloud reads best face-on, so it only sways
+            n.body.rotation.y = Math.sin(t * 0.6 + i) * 0.35;
+            n.body.rotation.x = Math.sin(t * 0.5 + i) * 0.1;
           } else {
             n.body.rotation.y = t * 0.5 + i;
             n.body.rotation.x = Math.sin(t * 0.6 + i) * 0.25;
           }
           n.holder.position.y = NODES[i].pos[1] + Math.sin(t * 1.1 + i * 0.9) * 0.08;
           n.body.scale.setScalar(1 + n.hover * 0.28);
-          (n.halo.material as THREE.SpriteMaterial).opacity = 0.16 + n.hover * 0.22;
+          (n.halo.material as THREE.SpriteMaterial).opacity = 0.07 + n.hover * 0.12;
           n.orbit.rotation.z = t * (0.4 + i * 0.07) + i;
-          n.halo.scale.setScalar(NODES[i].size * (5.5 + n.hover * 2) * (1 + Math.sin(t * 1.35 + i * 0.7) * 0.05));
+          n.halo.scale.setScalar(NODES[i].size * (4.5 + n.hover * 1.5) * (1 + Math.sin(t * 1.35 + i * 0.7) * 0.05));
         });
       }
 
