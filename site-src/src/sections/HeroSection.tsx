@@ -2,6 +2,7 @@ import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
 import Avatar from '../art/Avatar';
+import headImage from '../assets/head.webp';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 
@@ -53,6 +54,7 @@ export default function HeroSection() {
             inactiveTransition="transform 0.6s ease-in-out"
           >
             <Avatar
+              headSrc={headImage}
               className="block w-full select-none"
               // Fade the bottom of the hoodie into the page
               style={{
