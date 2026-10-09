@@ -1,16 +1,9 @@
 import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
-import { HeroOrb } from '../art/Shapes';
+import Avatar from '../art/Avatar';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
-// Drop a cut-out photo at src/assets/portrait.png (or .webp/.jpg) and it replaces the orb.
-// Fade the photo's cropped edges to transparent in the image itself so it blends into the page.
-const portraitFiles = import.meta.glob<string>('../assets/portrait.{png,webp,jpg,jpeg}', {
-  eager: true,
-  import: 'default',
-});
-const PORTRAIT = Object.values(portraitFiles)[0];
 
 export default function HeroSection() {
   return (
@@ -59,16 +52,14 @@ export default function HeroSection() {
             activeTransition="transform 0.3s ease-out"
             inactiveTransition="transform 0.6s ease-in-out"
           >
-            {PORTRAIT ? (
-              <img
-                src={PORTRAIT}
-                alt="Sandeep Komal"
-                draggable={false}
-                className="block w-full select-none"
-              />
-            ) : (
-              <HeroOrb className="block w-full select-none" />
-            )}
+            <Avatar
+              className="block w-full select-none"
+              // Fade the bottom of the hoodie into the page
+              style={{
+                maskImage: 'linear-gradient(to bottom, #000 85%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, #000 85%, transparent 100%)',
+              }}
+            />
           </Magnet>
         </FadeIn>
       </div>
