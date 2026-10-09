@@ -18,7 +18,7 @@ export const HERO_TAGLINE = 'cloud, devops & devsecops engineer building automat
 
 // Marquee rows: first 11 move right, the rest move left.
 export const MARQUEE_TOOLS = [
-  'AWS', 'EKS', 'Terraform', 'Kubernetes', 'Docker', 'Helm', 'Ansible', 'Python', 'GitHub Actions', 'Jenkins', 'Harness',
+  'AWS', 'EKS', 'Terraform', 'Docker', 'Kubernetes', 'Helm', 'Ansible', 'Python', 'GitHub Actions', 'Jenkins', 'Harness',
   'CodeQL', 'SonarQube', 'Trivy', 'Checkov', 'Kyverno', 'Falco', 'Prometheus', 'Grafana', 'Vault', 'Splunk',
 ];
 
