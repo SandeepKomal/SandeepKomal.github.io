@@ -1,17 +1,106 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 // Interactive delivery-pipeline map: GitHub → CI/CD → AWS → Kubernetes, with
 // security and observability, drawn in WebGL with particles flowing along each link.
 
+// Each node gets its own 3D shape: a gem for source control, a loop for CI/CD, a cloud for AWS,
+// a heptagon prism for Kubernetes, a crystal for security and a radar orb for observability.
 const NODES = [
-  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x67dfff },
-  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0x8e96ff },
-  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0x67dfff },
-  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x8e96ff },
-  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x5ee69d },
-  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x67dfff },
+  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x00e5ff, shape: 'gem' },
+  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0xb026ff, shape: 'loop' },
+  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0xff7a00, shape: 'cloud' },
+  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x2b5bff, shape: 'heptagon' },
+  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x39ff6a, shape: 'crystal' },
+  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x00ffd0, shape: 'radar' },
 ] as const;
+
+type Shape = (typeof NODES)[number]['shape'];
+
+/** Soft round glow used for node halos and the flowing particles */
+function makeGlowTexture() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const ctx = c.getContext('2d')!;
+  const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,1)');
+  g.addColorStop(0.25, 'rgba(255,255,255,0.45)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 128, 128);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Builds the 3D object for one node, centred on the origin */
+function makeShape(
+  shape: Shape,
+  size: number,
+  material: THREE.Material,
+  edgeColor: number,
+  track: (d: { dispose: () => void }) => void,
+) {
+  const group = new THREE.Group();
+  const add = (geo: THREE.BufferGeometry, edges = false) => {
+    track(geo);
+    const mesh = new THREE.Mesh(geo, material);
+    group.add(mesh);
+    if (edges) {
+      const edgeGeo = new THREE.EdgesGeometry(geo);
+      // A lighter tint of the neon colour so facet edges read crisply against the faces
+      const edgeMat = new THREE.LineBasicMaterial({
+        color: new THREE.Color(edgeColor).lerp(new THREE.Color(0xffffff), 0.55),
+        transparent: true,
+        opacity: 0.85,
+      });
+      track(edgeGeo);
+      track(edgeMat);
+      // Attach the outline to the mesh so it follows the mesh's own rotation and scale
+      mesh.add(new THREE.LineSegments(edgeGeo, edgeMat));
+    }
+    return mesh;
+  };
+
+  switch (shape) {
+    case 'gem':
+      add(new THREE.IcosahedronGeometry(size * 1.05, 0), true);
+      break;
+    case 'loop': {
+      add(new THREE.TorusGeometry(size * 0.85, size * 0.3, 24, 64));
+      break;
+    }
+    case 'cloud': {
+      // Classic cloud silhouette: a flat-bottomed row of puffs with two larger puffs on top
+      const puffs: [number, number, number][] = [
+        [-0.78, -0.18, 0.36],
+        [-0.3, -0.2, 0.42],
+        [0.3, -0.2, 0.42],
+        [0.78, -0.18, 0.36],
+        [-0.32, 0.18, 0.5],
+        [0.25, 0.28, 0.6],
+      ];
+      puffs.forEach(([x, y, r]) => add(new THREE.SphereGeometry(size * r * 1.25, 40, 28)).position.set(x * size * 1.25, y * size * 1.25, 0));
+      group.scale.z = 0.6;
+      break;
+    }
+    case 'heptagon': {
+      const prism = add(new THREE.CylinderGeometry(size * 1.05, size * 1.05, size * 0.55, 7), true);
+      prism.rotation.x = Math.PI / 2;
+      break;
+    }
+    case 'crystal': {
+      const crystal = add(new THREE.OctahedronGeometry(size * 1.05, 0), true);
+      crystal.scale.set(0.85, 1.35, 0.85);
+      break;
+    }
+    case 'radar':
+      add(new THREE.SphereGeometry(size * 0.75, 40, 28));
+      break;
+  }
+  return group;
+}
 
 const EDGES = [
   ['github', 'cicd'],
@@ -42,8 +131,11 @@ export default function ArchitectureCanvas() {
     }
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0);
+    // Neutral tone mapping keeps saturated neon colours true instead of bleaching them
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 1;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -55,32 +147,86 @@ export default function ArchitectureCanvas() {
     scene.add(stage);
 
     const positions = new Map<string, THREE.Vector3>();
-    const glows: THREE.Mesh[] = [];
     const disposables: { dispose: () => void }[] = [];
+    const track = (d: { dispose: () => void }) => disposables.push(d);
 
-    NODES.forEach((node) => {
+    // Studio reflections + soft key/rim lights give the shapes a polished, product-render look
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    track(envMap);
+    scene.environment = envMap;
+    scene.add(new THREE.AmbientLight(0x8090ff, 0.12));
+    const key = new THREE.DirectionalLight(0xffffff, 2.2);
+    key.position.set(-3, 5, 6);
+    scene.add(key);
+    const rim = new THREE.PointLight(0xb600a8, 8, 20, 2);
+    rim.position.set(4, -2, 3);
+    scene.add(rim);
+
+    const glowTexture = makeGlowTexture();
+    track(glowTexture);
+
+    const nodeObjects = NODES.map((node, i) => {
       const pos = new THREE.Vector3(node.pos[0], node.pos[1], 0);
       positions.set(node.id, pos);
+      const holder = new THREE.Group();
+      holder.position.copy(pos);
+      network.add(holder);
 
-      const glowGeo = new THREE.SphereGeometry(node.size * 1.55, 20, 20);
-      const glowMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: 0.12 });
-      const glow = new THREE.Mesh(glowGeo, glowMat);
-      glow.position.copy(pos);
+      const faceted = node.shape === 'gem' || node.shape === 'crystal' || node.shape === 'heptagon';
+      const material = new THREE.MeshPhysicalMaterial({
+        color: node.color,
+        emissive: node.color,
+        emissiveIntensity: 0,
+        metalness: faceted ? 0.15 : 0.3,
+        roughness: faceted ? 0.08 : 0.18,
+        clearcoat: 1,
+        clearcoatRoughness: 0.06,
+        envMapIntensity: 0.55,
+        flatShading: faceted,
+      });
+      track(material);
+      const body = makeShape(node.shape, node.size * 1.35, material, node.color, track);
+      holder.add(body);
 
-      const coreGeo = new THREE.SphereGeometry(node.size, 20, 20);
-      const coreMat = new THREE.MeshBasicMaterial({ color: node.color });
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      core.position.copy(pos);
+      // Halo behind the object
+      const haloMat = new THREE.SpriteMaterial({
+        map: glowTexture,
+        color: node.color,
+        transparent: true,
+        opacity: 0.07,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      track(haloMat);
+      const halo = new THREE.Sprite(haloMat);
+      halo.scale.setScalar(node.size * 4.5);
+      halo.position.z = -0.3;
+      holder.add(halo);
 
-      network.add(glow, core);
-      glows.push(glow);
-      disposables.push(glowGeo, glowMat, coreGeo, coreMat);
+      // Thin orbit ring around each node (the radar node gets a bolder one)
+      const orbitGeo = new THREE.TorusGeometry(node.size * 2.1, node.shape === 'radar' ? 0.028 : 0.012, 8, 96);
+      const orbitMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: node.shape === 'radar' ? 0.6 : 0.25 });
+      track(orbitGeo);
+      track(orbitMat);
+      const orbit = new THREE.Mesh(orbitGeo, orbitMat);
+      orbit.rotation.set(Math.PI * 0.42, 0, i * 0.6);
+      holder.add(orbit);
+
+      return { body, halo, orbit, holder, baseScale: 1, hover: 0 };
     });
 
-    const lineMat = new THREE.LineBasicMaterial({ color: 0x5c77c9, transparent: true, opacity: 0.35 });
-    const particleGeo = new THREE.SphereGeometry(0.075, 10, 10);
-    const particleMat = new THREE.MeshBasicMaterial({ color: 0x76e6ff });
-    disposables.push(lineMat, particleGeo, particleMat);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x6f8cff, transparent: true, opacity: 0.45 });
+    const particleMat = new THREE.SpriteMaterial({
+      map: glowTexture,
+      color: 0x9ff0ff,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    disposables.push(lineMat, particleMat);
 
     const particles = EDGES.map(([from, to], i) => {
       const a = positions.get(from)!;
@@ -89,7 +235,8 @@ export default function ArchitectureCanvas() {
       disposables.push(lineGeo);
       network.add(new THREE.Line(lineGeo, lineMat));
 
-      const mesh = new THREE.Mesh(particleGeo, particleMat);
+      const mesh = new THREE.Sprite(particleMat);
+      mesh.scale.setScalar(0.32);
       network.add(mesh);
       return { mesh, a, b, offset: (i * 0.17) % 1, speed: 0.12 + (i % 3) * 0.035 };
     });
@@ -108,16 +255,21 @@ export default function ArchitectureCanvas() {
     network.add(grid);
     disposables.push(grid.geometry, grid.material as THREE.Material);
 
-    const pointer = { x: 0, y: 0 };
+    const pointer = { x: 0, y: 0, inside: false };
     const onMove = (e: PointerEvent) => {
       const rect = root.getBoundingClientRect();
       pointer.x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
       pointer.y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      pointer.inside = true;
     };
     const onLeave = () => {
       pointer.x = 0;
       pointer.y = 0;
+      pointer.inside = false;
     };
+    const raycaster = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    let hovered = -1;
     if (!reduceMotion) {
       root.addEventListener('pointermove', onMove, { passive: true });
       root.addEventListener('pointerleave', onLeave);
@@ -163,7 +315,36 @@ export default function ArchitectureCanvas() {
         network.rotation.y = Math.sin(t * 0.18) * 0.035;
         ring.rotation.z += 0.0014;
         particles.forEach((p) => p.mesh.position.lerpVectors(p.a, p.b, (t * p.speed + p.offset) % 1));
-        glows.forEach((g, i) => g.scale.setScalar(1 + Math.sin(t * 1.35 + i * 0.7) * 0.06));
+
+        // Which node is under the cursor?
+        hovered = -1;
+        if (pointer.inside) {
+          ndc.set(pointer.x, -pointer.y);
+          raycaster.setFromCamera(ndc, camera);
+          const hit = raycaster.intersectObjects(nodeObjects.map((n) => n.body), true)[0];
+          if (hit) hovered = nodeObjects.findIndex((n) => n.body === hit.object.parent || n.body === hit.object);
+        }
+
+        nodeObjects.forEach((n, i) => {
+          n.hover += ((i === hovered ? 1 : 0) - n.hover) * 0.12;
+          if (NODES[i].shape === 'loop' || NODES[i].shape === 'heptagon') {
+            // Flat shapes spin in the screen plane so they never turn edge-on
+            n.body.rotation.z = t * 0.6 + i;
+            n.body.rotation.y = Math.sin(t * 0.7 + i) * 0.45;
+          } else if (NODES[i].shape === 'cloud') {
+            // The cloud reads best face-on, so it only sways
+            n.body.rotation.y = Math.sin(t * 0.6 + i) * 0.35;
+            n.body.rotation.x = Math.sin(t * 0.5 + i) * 0.1;
+          } else {
+            n.body.rotation.y = t * 0.5 + i;
+            n.body.rotation.x = Math.sin(t * 0.6 + i) * 0.25;
+          }
+          n.holder.position.y = NODES[i].pos[1] + Math.sin(t * 1.1 + i * 0.9) * 0.08;
+          n.body.scale.setScalar(1 + n.hover * 0.28);
+          (n.halo.material as THREE.SpriteMaterial).opacity = 0.07 + n.hover * 0.12;
+          n.orbit.rotation.z = t * (0.4 + i * 0.07) + i;
+          n.halo.scale.setScalar(NODES[i].size * (4.5 + n.hover * 1.5) * (1 + Math.sin(t * 1.35 + i * 0.7) * 0.05));
+        });
       }
 
       renderer.render(scene, camera);
@@ -172,9 +353,10 @@ export default function ArchitectureCanvas() {
       NODES.forEach((node, i) => {
         const el = labelRefs.current[i];
         if (!el) return;
-        projected.set(node.pos[0], node.pos[1] - node.size - 0.35, 0);
+        projected.set(node.pos[0], node.pos[1] - node.size * 1.35 - 0.5, 0);
         projected.applyMatrix4(network.matrixWorld).project(camera);
         el.style.transform = `translate(-50%, 0) translate(${((projected.x + 1) / 2) * width}px, ${((1 - projected.y) / 2) * height}px)`;
+        el.style.color = i === hovered ? '#FFFFFF' : '';
       });
     };
     animate();
