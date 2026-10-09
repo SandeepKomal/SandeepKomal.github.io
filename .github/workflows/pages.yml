@@ -33,8 +33,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build Sandeep 3D Creator page
-        working-directory: 3d-src
+      - name: Build portfolio
+        working-directory: site-src
         run: |
           npm install
           npm run build
@@ -42,7 +42,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp -r index.html assets 3d .nojekyll _site/
+          cp -r index.html app classic 3d .nojekyll _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

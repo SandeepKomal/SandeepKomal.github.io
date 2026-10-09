@@ -2,6 +2,7 @@ import FadeIn from '../components/FadeIn';
 import AnimatedText from '../components/AnimatedText';
 import ContactButton from '../components/ContactButton';
 import { Brick, Moon, Spheres, Torus } from '../art/Shapes';
+import { ABOUT_STATS, ABOUT_TEXT } from '../content';
 
 const DECORATIONS = [
   {
@@ -30,8 +31,6 @@ const DECORATIONS = [
   },
 ];
 
-const ABOUT_TEXT =
-  "I turn ideas into bold 3D worlds -- sculpting objects, lighting scenes and animating stories that make brands impossible to ignore. Every project gets the same obsession with detail, from the first sketch to the final frame. Got something ambitious in mind? Let's make it real.";
 
 export default function AboutSection() {
   return (
@@ -60,6 +59,16 @@ export default function AboutSection() {
             className="max-w-[560px] text-center font-medium leading-relaxed text-[#D7E2EA]"
             style={{ fontSize: 'clamp(1rem, 2vw, 1.35rem)' }}
           />
+          <div className="grid w-full max-w-[640px] grid-cols-2 gap-3 sm:grid-cols-4">
+            {ABOUT_STATS.map((stat, i) => (
+              <FadeIn key={stat.title} delay={i * 0.08} y={20}>
+                <div className="h-full rounded-3xl border border-[#D7E2EA]/20 px-4 py-4 text-center">
+                  <p className="font-semibold uppercase tracking-wider text-[#D7E2EA]">{stat.title}</p>
+                  <p className="mt-1 text-sm font-light text-[#D7E2EA]/60">{stat.text}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
         </div>
         <ContactButton />
       </div>

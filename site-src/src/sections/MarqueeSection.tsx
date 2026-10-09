@@ -1,14 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Scene, { PALETTES } from '../art/Scene';
+import { MARQUEE_TOOLS } from '../content';
 
-// Original procedural tiles (no third-party images): each pairs a palette with a layout.
-const TILE_NAMES = [
-  'Orb Study', 'Neon Room', 'Brick Lab', 'Halo', 'Prism', 'Night Drive', 'Bloom',
-  'Monolith', 'Sunset Kit', 'Ring World', 'Soft Cubes', 'Low Poly', 'Glass Form', 'Pulse',
-  'Drift', 'Ember', 'Tide', 'Signal', 'Atlas', 'Candy Shop', 'Echo',
-];
-
-const TILES = TILE_NAMES.map((name, i) => ({ name, palette: PALETTES[i % PALETTES.length], variant: i }));
+// Original procedural tiles (no third-party images), one per tool in the stack.
+const TILES = MARQUEE_TOOLS.map((name, i) => ({ name, palette: PALETTES[i % PALETTES.length], variant: i }));
 
 const ROW_ONE = [...TILES.slice(0, 11), ...TILES.slice(0, 11), ...TILES.slice(0, 11)];
 const ROW_TWO = [...TILES.slice(11), ...TILES.slice(11), ...TILES.slice(11)];
@@ -21,7 +16,7 @@ function Row({ tiles, transform }: { tiles: Tile[]; transform: string }) {
       {tiles.map((tile, i) => (
         <div key={i} className="relative h-[270px] w-[420px] shrink-0 overflow-hidden rounded-2xl">
           <Scene palette={tile.palette} variant={tile.variant} className="h-full w-full" />
-          <span className="absolute bottom-4 left-5 text-lg font-semibold uppercase tracking-wider text-white/90">
+          <span className="absolute bottom-4 left-5 text-2xl font-semibold uppercase tracking-wider text-white/90">
             {tile.name}
           </span>
         </div>
