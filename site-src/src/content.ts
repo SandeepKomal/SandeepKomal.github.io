@@ -1,6 +1,7 @@
 // All page text lives here -- edit this file to update the site.
 
 export const LINKS = {
+  email: 'mailto:sandeepkomalp@gmail.com',
   github: 'https://github.com/SandeepKomal',
   linkedin: 'https://www.linkedin.com/in/sandeep-komal-pothu-ba4497283',
   medium: 'https://sandeepkomalp.medium.com',
