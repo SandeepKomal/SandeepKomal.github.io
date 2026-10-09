@@ -1,4 +1,4 @@
-import{r as Ti,j as wn}from"./index-dxks5--B.js";/**
+import{r as Ti,j as wn}from"./index-WayupqET.js";/**
  * @license
  * Copyright 2010-2024 Three.js Authors
  * SPDX-License-Identifier: MIT

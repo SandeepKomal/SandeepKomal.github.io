@@ -5,6 +5,7 @@ import { HeroOrb } from '../art/Shapes';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 // Drop a cut-out photo at src/assets/portrait.png (or .webp/.jpg) and it replaces the orb.
+// Fade the photo's cropped edges to transparent in the image itself so it blends into the page.
 const portraitFiles = import.meta.glob<string>('../assets/portrait.{png,webp,jpg,jpeg}', {
   eager: true,
   import: 'default',
@@ -64,11 +65,6 @@ export default function HeroSection() {
                 alt="Sandeep Komal"
                 draggable={false}
                 className="block w-full select-none"
-                // Soft fade at the bottom so the photo melts into the background
-                style={{
-                  maskImage: 'linear-gradient(to bottom, #000 78%, transparent 100%)',
-                  WebkitMaskImage: 'linear-gradient(to bottom, #000 78%, transparent 100%)',
-                }}
               />
             ) : (
               <HeroOrb className="block w-full select-none" />
