@@ -1,10 +1,8 @@
 import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
-import Avatar from '../art/Avatar';
 import headImage from '../assets/head.webp';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
-
 
 export default function HeroSection() {
   return (
@@ -45,7 +43,7 @@ export default function HeroSection() {
         </FadeIn>
       </div>
 
-      <div className="absolute left-1/2 top-1/2 z-10 w-[280px] -translate-x-1/2 -translate-y-1/2 sm:bottom-0 sm:top-auto sm:w-[360px] sm:translate-y-0 md:w-[440px] lg:w-[520px]">
+      <div className="absolute left-1/2 top-1/2 z-10 w-[280px] -translate-x-1/2 -translate-y-1/2 sm:bottom-0 sm:top-auto sm:w-[400px] sm:translate-y-0 md:w-[480px] lg:w-[620px]">
         <FadeIn delay={0.6} y={30}>
           <Magnet
             padding={150}
@@ -53,14 +51,11 @@ export default function HeroSection() {
             activeTransition="transform 0.3s ease-out"
             inactiveTransition="transform 0.6s ease-in-out"
           >
-            <Avatar
-              headSrc={headImage}
+            <img
+              src={headImage}
+              alt="3D portrait of Sandeep"
+              draggable={false}
               className="block w-full select-none"
-              // Fade the bottom of the hoodie into the page
-              style={{
-                maskImage: 'linear-gradient(to bottom, #000 85%, transparent 100%)',
-                WebkitMaskImage: 'linear-gradient(to bottom, #000 85%, transparent 100%)',
-              }}
             />
           </Magnet>
         </FadeIn>
