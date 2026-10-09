@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 // Interactive delivery-pipeline map: GitHub → CI/CD → AWS → Kubernetes, with
 // security and observability, drawn in WebGL with particles flowing along each link.
@@ -7,12 +8,12 @@ import * as THREE from 'three';
 // Each node gets its own 3D shape: a gem for source control, a loop for CI/CD, a cloud for AWS,
 // a heptagon prism for Kubernetes, a crystal for security and a radar orb for observability.
 const NODES = [
-  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x67dfff, shape: 'gem' },
-  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0x8e96ff, shape: 'loop' },
-  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0xffb070, shape: 'cloud' },
-  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x6f8cff, shape: 'heptagon' },
-  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x5ee69d, shape: 'crystal' },
-  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x67dfff, shape: 'radar' },
+  { id: 'github', label: 'GitHub', pos: [-3.9, 2.25], size: 0.36, color: 0x1fa8e0, shape: 'gem' },
+  { id: 'cicd', label: 'CI/CD', pos: [-1.7, 0.8], size: 0.3, color: 0x6b4dff, shape: 'loop' },
+  { id: 'aws', label: 'AWS', pos: [0.55, 1.95], size: 0.38, color: 0xff8a1f, shape: 'cloud' },
+  { id: 'eks', label: 'Kubernetes', pos: [2.85, 0.65], size: 0.34, color: 0x3360ff, shape: 'heptagon' },
+  { id: 'security', label: 'Security', pos: [0.55, -1.15], size: 0.31, color: 0x16c47a, shape: 'crystal' },
+  { id: 'observe', label: 'Observability', pos: [3.95, -1.45], size: 0.34, color: 0x18b8e8, shape: 'radar' },
 ] as const;
 
 type Shape = (typeof NODES)[number]['shape'];
@@ -42,7 +43,7 @@ function makeShape(shape: Shape, size: number, material: THREE.Material, track: 
     group.add(mesh);
     if (edges) {
       const edgeGeo = new THREE.EdgesGeometry(geo);
-      const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.12 });
       track(edgeGeo);
       track(edgeMat);
       group.add(new THREE.LineSegments(edgeGeo, edgeMat));
@@ -115,8 +116,11 @@ export default function ArchitectureCanvas() {
     }
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0);
+    // Filmic tone mapping keeps highlights soft instead of blown out
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.95;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -131,12 +135,17 @@ export default function ArchitectureCanvas() {
     const disposables: { dispose: () => void }[] = [];
     const track = (d: { dispose: () => void }) => disposables.push(d);
 
-    // Lighting so the shapes read as solid, glossy 3D objects
-    scene.add(new THREE.AmbientLight(0x8090ff, 0.9));
-    const key = new THREE.DirectionalLight(0xffffff, 2.4);
+    // Studio reflections + soft key/rim lights give the shapes a polished, product-render look
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    track(envMap);
+    scene.environment = envMap;
+    scene.add(new THREE.AmbientLight(0x8090ff, 0.25));
+    const key = new THREE.DirectionalLight(0xffffff, 1.6);
     key.position.set(-3, 5, 6);
     scene.add(key);
-    const rim = new THREE.PointLight(0xb600a8, 30, 20, 2);
+    const rim = new THREE.PointLight(0xb600a8, 8, 20, 2);
     rim.position.set(4, -2, 3);
     scene.add(rim);
 
@@ -150,13 +159,17 @@ export default function ArchitectureCanvas() {
       holder.position.copy(pos);
       network.add(holder);
 
-      const material = new THREE.MeshStandardMaterial({
+      const faceted = node.shape === 'gem' || node.shape === 'crystal' || node.shape === 'heptagon';
+      const material = new THREE.MeshPhysicalMaterial({
         color: node.color,
         emissive: node.color,
-        emissiveIntensity: 0.28,
-        metalness: 0.35,
-        roughness: 0.22,
-        flatShading: node.shape === 'gem' || node.shape === 'crystal',
+        emissiveIntensity: 0.04,
+        metalness: faceted ? 0.15 : 0.3,
+        roughness: faceted ? 0.08 : 0.18,
+        clearcoat: 1,
+        clearcoatRoughness: 0.06,
+        envMapIntensity: 0.7,
+        flatShading: faceted,
       });
       track(material);
       const body = makeShape(node.shape, node.size * 1.35, material, track);
@@ -167,19 +180,19 @@ export default function ArchitectureCanvas() {
         map: glowTexture,
         color: node.color,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.16,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
       track(haloMat);
       const halo = new THREE.Sprite(haloMat);
-      halo.scale.setScalar(node.size * 6.5);
+      halo.scale.setScalar(node.size * 5.5);
       halo.position.z = -0.3;
       holder.add(halo);
 
       // Thin orbit ring around each node (the radar node gets a bolder one)
       const orbitGeo = new THREE.TorusGeometry(node.size * 2.1, node.shape === 'radar' ? 0.028 : 0.012, 8, 96);
-      const orbitMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: node.shape === 'radar' ? 0.9 : 0.45 });
+      const orbitMat = new THREE.MeshBasicMaterial({ color: node.color, transparent: true, opacity: node.shape === 'radar' ? 0.7 : 0.3 });
       track(orbitGeo);
       track(orbitMat);
       const orbit = new THREE.Mesh(orbitGeo, orbitMat);
@@ -194,6 +207,7 @@ export default function ArchitectureCanvas() {
       map: glowTexture,
       color: 0x9ff0ff,
       transparent: true,
+      opacity: 0.7,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -308,8 +322,9 @@ export default function ArchitectureCanvas() {
           }
           n.holder.position.y = NODES[i].pos[1] + Math.sin(t * 1.1 + i * 0.9) * 0.08;
           n.body.scale.setScalar(1 + n.hover * 0.28);
+          (n.halo.material as THREE.SpriteMaterial).opacity = 0.16 + n.hover * 0.22;
           n.orbit.rotation.z = t * (0.4 + i * 0.07) + i;
-          n.halo.scale.setScalar(NODES[i].size * (6.5 + n.hover * 3) * (1 + Math.sin(t * 1.35 + i * 0.7) * 0.05));
+          n.halo.scale.setScalar(NODES[i].size * (5.5 + n.hover * 2) * (1 + Math.sin(t * 1.35 + i * 0.7) * 0.05));
         });
       }
 
