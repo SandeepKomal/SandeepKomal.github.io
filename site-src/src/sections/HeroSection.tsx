@@ -43,7 +43,7 @@ export default function HeroSection() {
         </FadeIn>
       </div>
 
-      <div className="absolute left-1/2 top-1/2 z-10 w-[280px] -translate-x-1/2 -translate-y-1/2 sm:bottom-0 sm:top-auto sm:w-[400px] sm:translate-y-0 md:w-[480px] lg:w-[620px]">
+      <div className="absolute left-1/2 top-1/2 z-10 w-[280px] -translate-x-1/2 -translate-y-1/2 sm:bottom-0 sm:top-auto sm:w-[min(400px,52vh)] sm:translate-y-0 md:w-[min(480px,56vh)] lg:w-[min(620px,62vh)]">
         <FadeIn delay={0.6} y={30}>
           <Magnet
             padding={150}
