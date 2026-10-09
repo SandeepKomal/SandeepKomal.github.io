@@ -4,6 +4,13 @@ import ContactButton from '../components/ContactButton';
 import { HeroOrb } from '../art/Shapes';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
+// Drop a cut-out photo at src/assets/portrait.png (or .webp/.jpg) and it replaces the orb.
+const portraitFiles = import.meta.glob<string>('../assets/portrait.{png,webp,jpg,jpeg}', {
+  eager: true,
+  import: 'default',
+});
+const PORTRAIT = Object.values(portraitFiles)[0];
+
 export default function HeroSection() {
   return (
     <section className="relative flex h-screen flex-col" style={{ overflowX: 'clip' }}>
@@ -51,7 +58,21 @@ export default function HeroSection() {
             activeTransition="transform 0.3s ease-out"
             inactiveTransition="transform 0.6s ease-in-out"
           >
-            <HeroOrb className="block w-full select-none" />
+            {PORTRAIT ? (
+              <img
+                src={PORTRAIT}
+                alt="Sandeep Komal"
+                draggable={false}
+                className="block w-full select-none"
+                // Soft fade at the bottom so the photo melts into the background
+                style={{
+                  maskImage: 'linear-gradient(to bottom, #000 78%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to bottom, #000 78%, transparent 100%)',
+                }}
+              />
+            ) : (
+              <HeroOrb className="block w-full select-none" />
+            )}
           </Magnet>
         </FadeIn>
       </div>
