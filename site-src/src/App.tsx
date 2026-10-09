@@ -1,8 +1,11 @@
 import HeroSection from './sections/HeroSection';
 import MarqueeSection from './sections/MarqueeSection';
 import AboutSection from './sections/AboutSection';
-import ServicesSection from './sections/ServicesSection';
+import StackSection from './sections/StackSection';
+import ArchitectureSection from './sections/ArchitectureSection';
 import ProjectsSection from './sections/ProjectsSection';
+import JourneySection from './sections/JourneySection';
+import ContactSection from './sections/ContactSection';
 
 export default function App() {
   return (
@@ -10,8 +13,11 @@ export default function App() {
       <HeroSection />
       <MarqueeSection />
       <AboutSection />
-      <ServicesSection />
+      <StackSection />
+      <ArchitectureSection />
       <ProjectsSection />
+      <JourneySection />
+      <ContactSection />
     </main>
   );
 }

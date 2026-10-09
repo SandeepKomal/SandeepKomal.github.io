@@ -2,13 +2,7 @@ import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
 import { HeroOrb } from '../art/Shapes';
-
-const NAV_LINKS = [
-  { label: 'About', href: '#about' },
-  { label: 'Price', href: '#services' },
-  { label: 'Projects', href: '#projects' },
-  { label: 'Contact', href: '#contact' },
-];
+import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 export default function HeroSection() {
   return (
@@ -41,7 +35,7 @@ export default function HeroSection() {
             className="max-w-[160px] font-light uppercase leading-snug tracking-wide text-[#D7E2EA] sm:max-w-[220px] md:max-w-[260px]"
             style={{ fontSize: 'clamp(0.75rem, 1.4vw, 1.5rem)' }}
           >
-            a 3d creator driven by crafting striking and unforgettable projects
+            {HERO_TAGLINE}
           </p>
         </FadeIn>
         <FadeIn delay={0.5} y={20}>
