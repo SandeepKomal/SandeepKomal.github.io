@@ -99,16 +99,30 @@ export default function LivePortrait({ className }: { className?: string }) {
       let shut = 0;
       if (blinkStart >= 0) {
         const t = now - blinkStart;
-        // quick close, short hold, slightly slower open — about 150 ms in total
-        const one = (u: number) => (u < 35 ? u / 35 : u < 95 ? 1 : u < 150 ? 1 - (u - 95) / 55 : 0);
-        shut = one(t) + (doubleBlink ? one(t - 250) : 0);
-        if (t > (doubleBlink ? 420 : 160)) {
+        // Paced like the 12-frame reference: ~3 frames closing, ~4 held shut, ~2 opening (≈190 ms)
+        const one = (u: number) => (u < 50 ? u / 50 : u < 115 ? 1 : u < 185 ? 1 - (u - 115) / 70 : 0);
+        shut = one(t) + (doubleBlink ? one(t - 280) : 0);
+        if (t > (doubleBlink ? 480 : 195)) {
           blinkStart = -1;
           nextBlink = now + rand(2800, 6000);
         }
       }
       const eased = shut * shut * (3 - 2 * shut);
-      if (closedRef.current) closedRef.current.style.opacity = String(eased);
+      const cl = closedRef.current;
+      if (cl) {
+        // The closed lid slides down over each eye: reveal the closed render top-down with a soft
+        // edge that travels from the upper lash line to the lower lid (each eye has its own edge).
+        cl.style.opacity = eased > 0.01 ? '1' : '0';
+        if (eased > 0.01) {
+          const edge = ([top, bottom]: readonly number[]) => {
+            const e = top + (bottom - top + 12) * eased - 10;
+            return `linear-gradient(180deg, #000 ${e}%, transparent ${e + 10}%)`;
+          };
+          const mask = `${edge(geometry.closedLid.l)}, ${edge(geometry.closedLid.r)}`;
+          cl.style.webkitMaskImage = mask;
+          cl.style.maskImage = mask;
+        }
+      }
     };
     frame = requestAnimationFrame(tick);
 
@@ -181,6 +195,12 @@ export default function LivePortrait({ className }: { className?: string }) {
         style={{
           ...place([geometry.closed[0], geometry.closed[1], geometry.closed[2] - geometry.closed[0], geometry.closed[3] - geometry.closed[1]]),
           opacity: 0,
+          WebkitMaskSize: `${geometry.closedLid.split}% 100%, ${100 - geometry.closedLid.split}% 100%`,
+          maskSize: `${geometry.closedLid.split}% 100%, ${100 - geometry.closedLid.split}% 100%`,
+          WebkitMaskPosition: 'left top, right top',
+          maskPosition: 'left top, right top',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
         }}
       />
     </div>
