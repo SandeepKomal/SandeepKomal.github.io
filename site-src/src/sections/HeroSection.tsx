@@ -1,7 +1,7 @@
 import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
-import headImage from '../assets/head.webp';
+import LivePortrait from '../components/LivePortrait';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 export default function HeroSection() {
@@ -51,12 +51,7 @@ export default function HeroSection() {
             activeTransition="transform 0.3s ease-out"
             inactiveTransition="transform 0.6s ease-in-out"
           >
-            <img
-              src={headImage}
-              alt="3D portrait of Sandeep"
-              draggable={false}
-              className="block w-full select-none"
-            />
+            <LivePortrait className="block w-full" />
           </Magnet>
         </FadeIn>
       </div>
