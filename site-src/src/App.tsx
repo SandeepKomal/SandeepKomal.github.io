@@ -6,6 +6,7 @@ import ArchitectureSection from './sections/ArchitectureSection';
 import ProjectsSection from './sections/ProjectsSection';
 import JourneySection from './sections/JourneySection';
 import ContactSection from './sections/ContactSection';
+import TechCursor from './components/TechCursor';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <ProjectsSection />
       <JourneySection />
       <ContactSection />
+      <TechCursor />
     </main>
   );
 }
