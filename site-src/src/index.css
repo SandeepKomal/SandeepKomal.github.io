@@ -23,3 +23,38 @@ body,
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* Custom tech cursor (see TechCursor.tsx) — only applied on fine-pointer devices */
+html.tech-cursor,
+html.tech-cursor * {
+  cursor: none !important;
+}
+
+.tech-cursor-arrow,
+.tech-cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483647;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  will-change: transform;
+}
+
+/* the arrow's tip sits at (3, 2) inside its SVG */
+.tech-cursor-arrow {
+  margin: -2px 0 0 -3px;
+  transform-origin: 3px 2px;
+}
+
+.tech-cursor-ring {
+  --fill: 0;
+  border-radius: 9999px;
+  /* silver ring that warms to the brand magenta and fills slightly over links and buttons */
+  border: 1.5px solid color-mix(in srgb, #b600a8 calc(var(--fill) * 700%), rgba(215, 226, 234, 0.7));
+  background: rgba(182, 0, 168, var(--fill));
+  box-shadow:
+    0 0 12px rgba(182, 0, 168, 0.35),
+    inset 0 0 8px rgba(118, 33, 176, 0.25);
+}
