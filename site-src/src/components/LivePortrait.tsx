@@ -7,15 +7,14 @@ import maskL from '../assets/portrait/mask-l.png';
 import maskR from '../assets/portrait/mask-r.png';
 import geometry from '../assets/portrait/geometry.json';
 
-const closedFiles = import.meta.glob<string>('../assets/portrait/closed.{webp,png,jpg}', { eager: true, import: 'default' });
-const CLOSED = Object.values(closedFiles)[0];
+import closed from '../assets/portrait/closed.webp';
 
 // The 3D portrait split into layers: a base with the irises removed, each iris on its own
 // (moved by the cursor, clipped to the eye opening) and the hair strands that cross the eyes
 // drawn back on top. At rest it matches the original image.
 //
-// Blinking: drop a closed-eyes render of the same image (same framing) at
-// src/assets/portrait/closed.webp and the eyes will blink by briefly showing it.
+// Blinking: a closed-eyes render of the same character, aligned to this one and cut down to
+// the eye areas (closed.webp), is flashed in for a natural ~150 ms blink.
 
 const { width: W, height: H } = geometry;
 const pct = (v: number, of: number) => `${(v / of) * 100}%`;
@@ -97,17 +96,18 @@ export default function LivePortrait({ className }: { className?: string }) {
         blinkStart = now;
         doubleBlink = Math.random() < 0.18;
       }
-      let closed = 0;
+      let shut = 0;
       if (blinkStart >= 0) {
         const t = now - blinkStart;
-        const one = (u: number) => (u < 70 ? u / 70 : u < 110 ? 1 : u < 230 ? 1 - (u - 110) / 120 : 0);
-        closed = one(t) + (doubleBlink ? one(t - 260) : 0);
-        if (t > (doubleBlink ? 500 : 240)) {
+        // quick close, short hold, slightly slower open — about 150 ms in total
+        const one = (u: number) => (u < 35 ? u / 35 : u < 95 ? 1 : u < 150 ? 1 - (u - 95) / 55 : 0);
+        shut = one(t) + (doubleBlink ? one(t - 250) : 0);
+        if (t > (doubleBlink ? 420 : 160)) {
           blinkStart = -1;
           nextBlink = now + rand(2800, 6000);
         }
       }
-      const eased = closed * closed * (3 - 2 * closed);
+      const eased = shut * shut * (3 - 2 * shut);
       if (closedRef.current) closedRef.current.style.opacity = String(eased);
     };
     frame = requestAnimationFrame(tick);
@@ -172,21 +172,17 @@ export default function LivePortrait({ className }: { className?: string }) {
         style={place([geometry.hair[0], geometry.hair[1], geometry.hair[2] - geometry.hair[0], geometry.hair[3] - geometry.hair[1]])}
       />
 
-      {CLOSED && (
-        <img
-          ref={closedRef}
-          src={CLOSED}
-          alt=""
-          draggable={false}
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          style={{
-            opacity: 0,
-            // only the band around the eyes swaps, so any tiny difference elsewhere never shows
-            WebkitMaskImage: 'linear-gradient(180deg, transparent 50%, #000 54%, #000 66%, transparent 70%)',
-            maskImage: 'linear-gradient(180deg, transparent 50%, #000 54%, #000 66%, transparent 70%)',
-          }}
-        />
-      )}
+      <img
+        ref={closedRef}
+        src={closed}
+        alt=""
+        draggable={false}
+        className="pointer-events-none absolute"
+        style={{
+          ...place([geometry.closed[0], geometry.closed[1], geometry.closed[2] - geometry.closed[0], geometry.closed[3] - geometry.closed[1]]),
+          opacity: 0,
+        }}
+      />
     </div>
   );
 }
