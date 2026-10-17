@@ -1,5 +1,12 @@
 // All page text lives here -- edit this file to update the site.
 
+import komoraImg from './assets/projects/komora.webp';
+import pasteSafeImg from './assets/projects/paste-safe.webp';
+import git3dImg from './assets/projects/git3d-universe.webp';
+import neonArenaImg from './assets/projects/neon-arena.webp';
+import glassfolioImg from './assets/projects/glassfolio.webp';
+import devsecopsImg from './assets/projects/devsecops.webp';
+
 export const LINKS = {
   email: 'mailto:sandeepkomalp@gmail.com',
   github: 'https://github.com/SandeepKomal',
@@ -42,38 +49,63 @@ export const STACK = [
 ];
 
 // scenes: three [palette index, layout variant] pairs for the card artwork
+// Preview images live in assets/projects (KOMORA and DevSecOps art is drawn for this site).
 export const PROJECTS = [
+  {
+    name: 'KOMORA',
+    category: 'Cloud Native',
+    description: 'A Flask e-commerce storefront and admin, shipped to Kubernetes with restricted pod security, default-deny networking, Kyverno policies and a fully scanned CI/CD pipeline.',
+    stack: ['Flask', 'Kubernetes', 'Kyverno', 'Trivy'],
+    href: 'https://github.com/SandeepKomal/komorapy_v4',
+    image: komoraImg,
+    accent: '#7EE787',
+  },
+  {
+    name: 'Paste-Safe',
+    category: 'Security Tool',
+    description: 'Strips secrets out of logs and configs before you paste them into an AI, then puts the real values back into its answer. Runs entirely in your browser.',
+    stack: ['JavaScript', 'PWA', 'CodeQL', 'Playwright'],
+    href: 'https://github.com/SandeepKomal/paste-safe',
+    live: 'https://sandeepkomal.github.io/paste-safe/',
+    image: pasteSafeImg,
+    accent: '#FFB000',
+  },
   {
     name: 'Git3D Universe',
     category: 'GitHub Action',
-    description: 'A custom GitHub visualization project turning developer activity into a distinctive 3D-style profile experience.',
-    tags: ['GitHub Actions', 'SVG', 'Automation'],
+    description: 'Turns a year of GitHub activity into a living 3D contribution universe: month wedges round a glowing core, with top repositories orbiting as planets.',
+    stack: ['GitHub Actions', 'SVG', 'Automation'],
     href: 'https://github.com/SandeepKomal/Git3D-Universe',
-    scenes: [[0, 1], [0, 3], [0, 0]],
+    image: git3dImg,
+    accent: '#B600A8',
   },
   {
     name: 'Neon Arena',
     category: 'GitHub Action',
     description: 'A GitHub Action that turns a year of contributions into a neon 3D stadium SVG: lit bars, a wrap-around LED ribbon of top repositories and a streak light-cycle.',
-    tags: ['GitHub Actions', 'SVG', 'Marketplace'],
+    stack: ['GitHub Actions', 'SVG', 'Marketplace'],
     href: 'https://github.com/SandeepKomal/Neon-Arena',
-    scenes: [[5, 2], [5, 1], [5, 0]],
-  },
-  {
-    name: 'DevSecOps',
-    category: 'Security',
-    description: 'Security-focused delivery workflows bringing code, dependency, container and deployment controls into CI/CD.',
-    tags: ['CodeQL', 'Trivy', 'GitHub Actions'],
-    href: 'https://github.com/SandeepKomal/DevSecOps',
-    scenes: [[3, 3], [3, 0], [3, 2]],
+    image: neonArenaImg,
+    accent: '#3FD0E0',
   },
   {
     name: 'README-Glassfolio',
     category: 'Profile Tooling',
     description: 'A free, browser-based generator that turns any GitHub username into a live, themed, self-updating profile README with stats, a heatmap and a 3D contribution universe.',
-    tags: ['GitHub', 'JavaScript', 'Automation'],
+    stack: ['JavaScript', 'GitHub API', 'Actions'],
     href: 'https://github.com/SandeepKomal/README-Glassfolio',
-    scenes: [[4, 2], [4, 1], [4, 0]],
+    live: 'https://sandeepkomal.github.io/README-Glassfolio/',
+    image: glassfolioImg,
+    accent: '#8C8CFF',
+  },
+  {
+    name: 'DevSecOps',
+    category: 'Security',
+    description: 'A defense-in-depth security lab in GitHub Actions: secrets, SAST, SCA, IaC, container and DAST scanning with SBOMs and supply-chain checks.',
+    stack: ['CodeQL', 'Semgrep', 'Trivy', 'OWASP ZAP'],
+    href: 'https://github.com/SandeepKomal/DevSecOps',
+    image: devsecopsImg,
+    accent: '#FF8A3D',
   },
 ] as const;
 

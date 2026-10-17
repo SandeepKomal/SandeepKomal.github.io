@@ -58,3 +58,13 @@ html.tech-cursor * {
     0 0 12px rgba(182, 0, 168, 0.35),
     inset 0 0 8px rgba(118, 33, 176, 0.25);
 }
+
+.tech-cursor-dust {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483646;
+  pointer-events: none;
+  image-rendering: pixelated;
+}

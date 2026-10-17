@@ -9,12 +9,15 @@ const INTERACTIVE = 'a, button, [role="button"], input, textarea, select, label,
 export default function TechCursor() {
   const arrowRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const dustRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (!window.matchMedia('(pointer: fine)').matches) return;
     const arrow = arrowRef.current;
     const ring = ringRef.current;
-    if (!arrow || !ring) return;
+    const dust = dustRef.current;
+    const ctx = dust?.getContext('2d');
+    if (!arrow || !ring || !dust || !ctx) return;
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.documentElement.classList.add('tech-cursor');
@@ -26,6 +29,30 @@ export default function TechCursor() {
     let press = 0;
     let visible = false;
     let frame = 0;
+
+    // dithered pixel dust: little square "pixels" shed by the cursor, burst out on click
+    const DUST = ['#B600A8', '#7621B0', '#BE4C00', '#D7E2EA'];
+    const GRID = 4;
+    type Mote = { x: number; y: number; vx: number; vy: number; life: number; max: number; c: string };
+    const motes: Mote[] = [];
+    const last = { x: -100, y: -100 };
+    const spawn = (x: number, y: number, speed: number, n: number) => {
+      if (reduceMotion) return;
+      for (let i = 0; i < n && motes.length < 260; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const v = speed * (0.3 + Math.random());
+        const max = 30 + Math.random() * 30;
+        motes.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: max, max, c: DUST[(Math.random() * DUST.length) | 0] });
+      }
+    };
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const sizeDust = () => {
+      dust.width = window.innerWidth * dpr;
+      dust.height = window.innerHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    sizeDust();
+    window.addEventListener('resize', sizeDust);
 
     const show = (v: boolean) => {
       visible = v;
@@ -43,7 +70,10 @@ export default function TechCursor() {
       }
       hoverTarget = (e.target as Element | null)?.closest?.(INTERACTIVE) ? 1 : 0;
     };
-    const onDown = () => (press = 1);
+    const onDown = () => {
+      press = 1;
+      spawn(pos.x, pos.y, 4, 28);
+    };
     const onUp = () => (press = 0);
     const onLeave = () => show(false);
 
@@ -65,6 +95,30 @@ export default function TechCursor() {
       ring.style.transform = `translate3d(${trail.x - size / 2}px, ${trail.y - size / 2}px, 0)`;
       ring.style.width = ring.style.height = `${size}px`;
       ring.style.setProperty('--fill', String(hover * 0.14));
+
+      const moved = Math.hypot(pos.x - last.x, pos.y - last.y);
+      if (visible && moved > 2) spawn(pos.x, pos.y, 0.6, Math.min(3, Math.ceil(moved / 12)));
+      last.x = pos.x;
+      last.y = pos.y;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      for (let i = motes.length - 1; i >= 0; i--) {
+        const m = motes[i];
+        m.x += m.vx;
+        m.y += m.vy;
+        m.vx *= 0.93;
+        m.vy = m.vy * 0.93 + 0.04;
+        if (--m.life <= 0) {
+          motes.splice(i, 1);
+          continue;
+        }
+        // snap to a pixel grid and fade out in ordered steps, like the hero's dither
+        const k = m.life / m.max;
+        ctx.globalAlpha = Math.ceil(k * 4) / 4;
+        ctx.fillStyle = m.c;
+        const sz = k > 0.5 ? GRID : GRID / 2;
+        ctx.fillRect(Math.round(m.x / GRID) * GRID, Math.round(m.y / GRID) * GRID, sz, sz);
+      }
+      ctx.globalAlpha = 1;
     };
     frame = requestAnimationFrame(tick);
 
@@ -75,11 +129,13 @@ export default function TechCursor() {
       window.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointerup', onUp);
       document.removeEventListener('pointerleave', onLeave);
+      window.removeEventListener('resize', sizeDust);
     };
   }, []);
 
   return (
     <>
+      <canvas ref={dustRef} className="tech-cursor-dust" aria-hidden />
       <div ref={ringRef} className="tech-cursor-ring" aria-hidden />
       <div ref={arrowRef} className="tech-cursor-arrow" aria-hidden>
         <svg width="30" height="36" viewBox="0 0 30 36" fill="none">

@@ -2,12 +2,14 @@ import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
 import LivePortrait from '../components/LivePortrait';
+import DitherScan from '../components/DitherScan';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 export default function HeroSection() {
   return (
     <section className="relative flex h-screen flex-col" style={{ overflowX: 'clip' }}>
-      <FadeIn delay={0} y={-20}>
+      <DitherScan className="pointer-events-none absolute inset-0 h-full w-full" />
+      <FadeIn delay={0} y={-20} className="relative z-[1]">
         <nav className="flex justify-between px-6 pt-6 md:px-10 md:pt-8">
           {NAV_LINKS.map((link) => (
             <a
@@ -21,7 +23,7 @@ export default function HeroSection() {
         </nav>
       </FadeIn>
 
-      <div className="overflow-hidden">
+      <div className="relative z-[1] overflow-hidden">
         <FadeIn delay={0.15} y={40}>
           <h1 className="hero-heading mt-6 w-full whitespace-nowrap text-center text-[11.2vw] font-black uppercase leading-none tracking-tight sm:mt-4 sm:text-[12vw] md:-mt-5 md:text-[12.4vw] lg:text-[13.4vw]">
             Hi, i&apos;m sandeep

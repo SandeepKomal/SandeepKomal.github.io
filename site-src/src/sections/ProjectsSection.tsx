@@ -1,112 +1,318 @@
-import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
-import LiveProjectButton from '../components/LiveProjectButton';
-import Scene, { PALETTES } from '../art/Scene';
 import { PROJECTS } from '../content';
 
-const IMAGE_RADIUS = 'rounded-[40px] sm:rounded-[50px] md:rounded-[60px]';
+// 3D project carousel: glass cards stood round a slowly turning cylinder. Drag (or swipe) to spin
+// it with inertia, use the arrows or keyboard to step card by card; it pauses while hovered and
+// stops rendering when scrolled out of view.
 
 type Project = (typeof PROJECTS)[number];
 
-function ProjectCard({
-  project,
-  index,
-  total,
-  progress,
-}: {
-  project: Project;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-}) {
-  const targetScale = 1 - (total - 1 - index) * 0.03;
-  const scale = useTransform(progress, [index / total, 1], [1, targetScale]);
-  const [colOneTop, colOneBottom, colTwo] = project.scenes.map(([palette, variant], i) => (
-    <Scene key={i} palette={PALETTES[palette]} variant={variant} className="h-full w-full" />
-  ));
+const STEP = 360 / PROJECTS.length;
+const AUTO_SPEED = 7; // degrees per second
+const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
+function ProjectCard({ project }: { project: Project }) {
+  const { accent } = project;
   return (
-    <div className="sticky top-24 flex h-[85vh] items-start justify-center md:top-32">
-      <motion.div
-        className="w-full origin-top rounded-[40px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:rounded-[50px] sm:p-6 md:rounded-[60px] md:p-8"
-        style={{ scale, top: `${index * 28}px`, position: 'relative' }}
+    <article
+      className="flex h-full flex-col rounded-[28px] p-4 sm:p-5"
+      style={{
+        background: `linear-gradient(165deg, ${accent}2e 0%, ${accent}0d 38%, rgba(12,12,12,0.82) 100%)`,
+        border: `1px solid ${accent}55`,
+        boxShadow: `0 30px 60px rgba(0,0,0,0.55), inset 0 1px 0 ${accent}40`,
+      }}
+    >
+      <span
+        className="self-start rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.18em] sm:text-[11px]"
+        style={{ fontFamily: MONO, color: accent, border: `1px solid ${accent}80`, background: `${accent}14` }}
       >
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4 sm:mb-6 md:mb-8">
-          <div className="flex items-center gap-4 sm:gap-6 md:gap-8">
-            <span className="hero-heading font-black leading-none" style={{ fontSize: 'clamp(3rem, 10vw, 140px)' }}>
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <div className="flex flex-col gap-1">
-              <span
-                className="font-light uppercase tracking-widest text-[#D7E2EA]/60"
-                style={{ fontSize: 'clamp(0.75rem, 1.2vw, 1rem)' }}
-              >
-                {project.category}
-              </span>
-              <h3 className="font-medium uppercase text-[#D7E2EA]" style={{ fontSize: 'clamp(1rem, 2.2vw, 2.1rem)' }}>
-                {project.name}
-              </h3>
-              <div className="mt-1 hidden flex-wrap gap-2 sm:flex">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-[#D7E2EA]/30 px-3 py-0.5 text-xs uppercase tracking-wider text-[#D7E2EA]/70"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <LiveProjectButton href={project.href} label="View Repo" />
-        </div>
+        {project.category}
+      </span>
 
-        <p
-          className="mb-4 max-w-3xl font-light leading-relaxed text-[#D7E2EA]/70 sm:mb-6"
-          style={{ fontSize: 'clamp(0.85rem, 1.4vw, 1.1rem)' }}
-        >
-          {project.description}
+      <div
+        className="mt-4 overflow-hidden rounded-[18px]"
+        style={{ aspectRatio: '16 / 9.5', border: '1px solid rgba(215,226,234,0.12)', background: '#0C0C0C' }}
+      >
+        <img
+          src={project.image}
+          alt={`${project.name} preview`}
+          draggable={false}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      </div>
+
+      <h3 className="mt-4 text-xl font-medium uppercase text-[#D7E2EA] sm:text-2xl">{project.name}</h3>
+      <p className="mt-2 line-clamp-3 text-[13px] font-light leading-relaxed text-[#D7E2EA]/65 sm:text-sm">
+        {project.description}
+      </p>
+
+      <div className="mt-auto flex items-end justify-between gap-3 border-t pt-4" style={{ borderColor: 'rgba(215,226,234,0.1)' }}>
+        <p className="text-[11px] leading-relaxed text-[#D7E2EA]/55 sm:text-xs" style={{ fontFamily: MONO }}>
+          <span style={{ color: accent }}>&gt;_</span> {project.stack.join(' · ')}
         </p>
-
-        <div className="flex gap-3 sm:gap-4" aria-hidden="true">
-          <div className="flex w-[40%] flex-col gap-3 sm:gap-4">
-            <div className={`w-full overflow-hidden ${IMAGE_RADIUS}`} style={{ height: 'clamp(110px, 13vw, 200px)' }}>
-              {colOneTop}
-            </div>
-            <div className={`w-full overflow-hidden ${IMAGE_RADIUS}`} style={{ height: 'clamp(130px, 18vw, 280px)' }}>
-              {colOneBottom}
-            </div>
-          </div>
-          <div className="w-[60%]">
-            <div className={`h-full w-full overflow-hidden ${IMAGE_RADIUS}`}>{colTwo}</div>
-          </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {'live' in project && (
+            <a
+              href={project.live}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full px-3 py-2 text-[11px] uppercase tracking-widest text-[#0C0C0C] transition-transform hover:scale-105"
+              style={{ background: accent, fontFamily: MONO }}
+            >
+              Live
+            </a>
+          )}
+          <a
+            href={project.href}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`${project.name} on GitHub`}
+            className="flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:scale-110"
+            style={{ border: `1px solid ${accent}`, color: accent, background: `${accent}1a` }}
+          >
+            <ArrowUpRight size={18} />
+          </a>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </article>
   );
 }
 
+function useCardWidth() {
+  const [width, setWidth] = useState(380);
+  useEffect(() => {
+    const update = () => setWidth(Math.round(Math.min(380, Math.max(250, window.innerWidth * 0.72))));
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return width;
+}
+
 export default function ProjectsSection() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
+  const stageRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const ctrl = useRef({ angle: 0, velocity: 0, target: null as number | null, hover: false, dragging: false });
+  const [active, setActive] = useState(0);
+  const cardWidth = useCardWidth();
+  const radius = Math.round((cardWidth / 2 / Math.tan(Math.PI / PROJECTS.length)) * 1.22);
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    const ring = ringRef.current;
+    if (!stage || !ring) return;
+    const c = ctrl.current;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let frame = 0;
+    let last = performance.now();
+    let onScreen = true;
+    let shown = -1;
+
+    const render = () => {
+      ring.style.transform = `translateZ(${-radius}px) rotateX(-6deg) rotateY(${c.angle}deg)`;
+      cardRefs.current.forEach((el, i) => {
+        if (!el) return;
+        // 1 when the card faces the viewer, -1 when it is at the back of the ring
+        const facing = Math.cos(((i * STEP + c.angle) * Math.PI) / 180);
+        el.style.opacity = String(0.28 + 0.72 * Math.max(0, facing) ** 1.5);
+        el.style.filter = `brightness(${0.55 + 0.45 * Math.max(0, facing)})`;
+        el.style.pointerEvents = facing > 0.7 ? 'auto' : 'none';
+      });
+      const front = ((Math.round(-c.angle / STEP) % PROJECTS.length) + PROJECTS.length) % PROJECTS.length;
+      if (front !== shown) {
+        shown = front;
+        setActive(front);
+      }
+    };
+
+    const tick = (now: number) => {
+      frame = requestAnimationFrame(tick);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (!onScreen) return;
+      if (c.dragging) {
+        // angle is driven by pointer moves
+      } else if (c.target !== null) {
+        const diff = c.target - c.angle;
+        c.angle += diff * Math.min(1, dt * 8);
+        if (Math.abs(diff) < 0.05) {
+          c.angle = c.target;
+          c.target = null;
+        }
+      } else if (Math.abs(c.velocity) > 0.5) {
+        c.angle += c.velocity * dt;
+        c.velocity *= Math.pow(0.04, dt);
+      } else if (!c.hover && !reduceMotion) {
+        c.velocity = 0;
+        c.angle -= AUTO_SPEED * dt;
+      }
+      render();
+    };
+
+    // drag / swipe with inertia
+    let startX = 0;
+    let lastX = 0;
+    let lastT = 0;
+    let moved = 0;
+    const degPerPx = 360 / (2 * Math.PI * radius);
+    const onDown = (e: PointerEvent) => {
+      c.dragging = true;
+      c.target = null;
+      c.velocity = 0;
+      startX = lastX = e.clientX;
+      lastT = performance.now();
+      moved = 0;
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!c.dragging) return;
+      const dx = e.clientX - lastX;
+      const t = performance.now();
+      c.angle += dx * degPerPx * 1.4;
+      c.velocity = (dx * degPerPx * 1.4) / Math.max(0.008, (t - lastT) / 1000);
+      lastX = e.clientX;
+      lastT = t;
+      moved = Math.max(moved, Math.abs(e.clientX - startX));
+      if (moved > 6) stage.setPointerCapture(e.pointerId);
+    };
+    const onUp = () => {
+      if (!c.dragging) return;
+      c.dragging = false;
+      if (performance.now() - lastT > 80) c.velocity = 0;
+    };
+    // a drag should not also count as a click on a card link
+    const onClick = (e: MouseEvent) => {
+      if (moved > 6) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = 0;
+      }
+    };
+    const onEnter = () => (c.hover = true);
+    const onLeave = () => (c.hover = false);
+
+    stage.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    stage.addEventListener('click', onClick, true);
+    stage.addEventListener('pointerenter', onEnter);
+    stage.addEventListener('pointerleave', onLeave);
+    const io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting));
+    io.observe(stage);
+
+    render();
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      io.disconnect();
+      stage.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      stage.removeEventListener('click', onClick, true);
+      stage.removeEventListener('pointerenter', onEnter);
+      stage.removeEventListener('pointerleave', onLeave);
+    };
+  }, [radius]);
+
+  const go = (dir: number) => {
+    const c = ctrl.current;
+    const base = c.target ?? c.angle;
+    c.velocity = 0;
+    c.target = (Math.round(base / STEP) - dir) * STEP;
+  };
+
+  const cardHeight = Math.round(cardWidth * 1.3);
 
   return (
-    <section id="projects" className="relative bg-[#0C0C0C] px-5 pt-24 sm:px-8 sm:pt-32 md:px-10 md:pt-40">
+    <section id="projects" className="relative overflow-hidden bg-[#0C0C0C] px-5 pt-24 sm:px-8 sm:pt-32 md:px-10 md:pt-40">
       <FadeIn delay={0} y={40}>
         <h2
-          className="hero-heading mb-16 text-center font-black uppercase leading-none tracking-tight sm:mb-20 md:mb-28"
+          className="hero-heading mb-6 text-center font-black uppercase leading-none tracking-tight sm:mb-10"
           style={{ fontSize: 'clamp(3rem, 12vw, 160px)' }}
         >
           Projects
         </h2>
       </FadeIn>
 
-      <div ref={ref} className="mx-auto max-w-6xl">
-        {PROJECTS.map((project, i) => (
-          <ProjectCard key={project.name} project={project} index={i} total={PROJECTS.length} progress={scrollYProgress} />
-        ))}
+      <div
+        ref={stageRef}
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Projects"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowRight') go(1);
+          if (e.key === 'ArrowLeft') go(-1);
+        }}
+        className="relative mx-auto flex touch-pan-y select-none items-center justify-center outline-none"
+        style={{ height: cardHeight + 140, perspective: '1600px', perspectiveOrigin: '50% 40%' }}
+      >
+        <div
+          ref={ringRef}
+          className="relative"
+          style={{ width: cardWidth, height: cardHeight, transformStyle: 'preserve-3d' }}
+        >
+          {PROJECTS.map((project, i) => (
+            <div
+              key={project.name}
+              ref={(el) => (cardRefs.current[i] = el)}
+              className="absolute inset-0"
+              style={
+                {
+                  transform: `rotateY(${i * STEP}deg) translateZ(${radius}px)`,
+                  willChange: 'transform, opacity',
+                } as CSSProperties
+              }
+              aria-hidden={i !== active}
+            >
+              <ProjectCard project={project} />
+            </div>
+          ))}
+        </div>
+        {/* soft floor reflection under the ring */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-6 left-1/2 h-24 w-[70%] -translate-x-1/2 rounded-[50%]"
+          style={{ background: `radial-gradient(closest-side, ${PROJECTS[active].accent}33, transparent)`, filter: 'blur(8px)' }}
+        />
       </div>
+
+      <div className="relative z-10 -mt-2 flex items-center justify-center gap-6 pb-24 sm:pb-32">
+        <button
+          type="button"
+          onClick={() => go(-1)}
+          aria-label="Previous project"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D7E2EA]/30 text-[#D7E2EA] transition-colors hover:border-[#D7E2EA]"
+        >
+          <ArrowLeft size={20} />
+        </button>
+        <div className="flex gap-2">
+          {PROJECTS.map((p, i) => (
+            <span
+              key={p.name}
+              className="h-1.5 rounded-full transition-all duration-300"
+              style={{ width: i === active ? 28 : 8, background: i === active ? p.accent : 'rgba(215,226,234,0.25)' }}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label="Next project"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D7E2EA]/30 text-[#D7E2EA] transition-colors hover:border-[#D7E2EA]"
+        >
+          <ArrowRight size={20} />
+        </button>
+      </div>
+      <p className="sr-only" aria-live="polite">
+        Showing {PROJECTS[active].name}
+      </p>
     </section>
   );
 }
