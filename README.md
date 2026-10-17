@@ -33,5 +33,5 @@ Pushing to `main` publishes the site with GitHub Pages. The built files are comm
 
 ## Licences
 
-All artwork is original SVG/WebGL drawn in code. Kanit font: SIL Open Font License. React, Framer Motion,
+All artwork is original SVG/WebGL drawn in code; project previews in `site-src/src/assets/projects/` are screenshots of the projects themselves or drawn for this site. Kanit font: SIL Open Font License. React, Framer Motion,
 Tailwind CSS, Vite and Three.js: MIT. Lucide icons: ISC. All free for personal and commercial use.
