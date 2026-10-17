@@ -51,7 +51,7 @@ export const STACK = [
 ];
 
 // scenes: three [palette index, layout variant] pairs for the card artwork
-// Preview images live in assets/projects (KOMORA, DevSecOps, Docker and Kubernetes art is drawn for this site).
+// Preview images live in assets/projects (DevSecOps, Docker and Kubernetes art is drawn for this site).
 export const PROJECTS = [
   {
     name: 'KOMORA',
@@ -60,7 +60,7 @@ export const PROJECTS = [
     stack: ['Flask', 'Kubernetes', 'Kyverno', 'Trivy'],
     href: 'https://github.com/SandeepKomal/komorapy_v4',
     image: komoraImg,
-    accent: '#7EE787',
+    accent: '#D9FF3A',
   },
   {
     name: 'Paste-Safe',
