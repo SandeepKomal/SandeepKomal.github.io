@@ -11,7 +11,7 @@ type Project = (typeof PROJECTS)[number];
 
 const STEP = 360 / PROJECTS.length;
 const AUTO_SPEED = 14; // degrees per second
-const TILT = -14; // look down on the ring a little so the cards at the back show above the front ones
+const TILT = -8; // look down on the ring a little so the cards at the back show above the front ones
 const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
 function ProjectCard({ project }: { project: Project }) {
@@ -46,7 +46,7 @@ function ProjectCard({ project }: { project: Project }) {
       </div>
 
       <h3 className="mt-4 text-xl font-medium uppercase text-[#D7E2EA] sm:text-2xl">{project.name}</h3>
-      <p className="mt-2 line-clamp-3 text-[13px] font-light leading-relaxed text-[#D7E2EA]/65 sm:text-sm">
+      <p className="mt-2 line-clamp-2 text-[13px] sm:line-clamp-3 font-light leading-relaxed text-[#D7E2EA]/65 sm:text-sm">
         {project.description}
       </p>
 
@@ -83,11 +83,11 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 function useCardWidth() {
-  const [width, setWidth] = useState(260);
+  const [width, setWidth] = useState(400);
   useEffect(() => {
     // fit the card to the screen's width and height so the ring and its controls fit in one view
     const update = () =>
-      setWidth(Math.round(Math.max(190, Math.min(260, window.innerWidth * 0.5, (window.innerHeight * 0.46) / 1.4))));
+      setWidth(Math.round(Math.max(230, Math.min(440, window.innerWidth * 0.62, (window.innerHeight * 0.68) / 1.32))));
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -102,7 +102,7 @@ export default function ProjectsSection() {
   const ctrl = useRef({ angle: 0, velocity: 0, target: null as number | null, hover: false, dragging: false });
   const [active, setActive] = useState(0);
   const cardWidth = useCardWidth();
-  const radius = Math.round((cardWidth / 2 / Math.tan(Math.PI / PROJECTS.length)) * 2.1);
+  const radius = Math.round((cardWidth / 2 / Math.tan(Math.PI / PROJECTS.length)) * 1.25);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -232,7 +232,8 @@ export default function ProjectsSection() {
     c.target = (Math.round(base / STEP) - dir) * STEP;
   };
 
-  const cardHeight = Math.round(cardWidth * 1.4);
+  // narrow (phone) cards need relatively more height for the same text
+  const cardHeight = Math.round(cardWidth * (cardWidth < 320 ? 1.5 : 1.32));
 
   return (
     <section id="projects" className="relative overflow-hidden bg-[#0C0C0C] px-5 pt-24 sm:px-8 sm:pt-32 md:px-10 md:pt-40">
@@ -256,7 +257,7 @@ export default function ProjectsSection() {
           if (e.key === 'ArrowLeft') go(-1);
         }}
         className="relative mx-auto flex touch-pan-y select-none items-center justify-center outline-none"
-        style={{ height: cardHeight + 70 + Math.round(radius * 0.5), perspective: '1600px', perspectiveOrigin: '50% 40%' }}
+        style={{ height: cardHeight + 60 + Math.round(radius * 0.18), perspective: '1600px', perspectiveOrigin: '50% 40%' }}
       >
         <div
           ref={ringRef}
