@@ -6,6 +6,8 @@ import git3dImg from './assets/projects/git3d-universe.webp';
 import neonArenaImg from './assets/projects/neon-arena.webp';
 import glassfolioImg from './assets/projects/glassfolio.webp';
 import devsecopsImg from './assets/projects/devsecops.webp';
+import dockerImg from './assets/projects/docker.webp';
+import kubernetesImg from './assets/projects/kubernetes.webp';
 
 export const LINKS = {
   email: 'mailto:sandeepkomalp@gmail.com',
@@ -49,7 +51,7 @@ export const STACK = [
 ];
 
 // scenes: three [palette index, layout variant] pairs for the card artwork
-// Preview images live in assets/projects (KOMORA and DevSecOps art is drawn for this site).
+// Preview images live in assets/projects (KOMORA, DevSecOps, Docker and Kubernetes art is drawn for this site).
 export const PROJECTS = [
   {
     name: 'KOMORA',
@@ -106,6 +108,24 @@ export const PROJECTS = [
     href: 'https://github.com/SandeepKomal/DevSecOps',
     image: devsecopsImg,
     accent: '#FF8A3D',
+  },
+  {
+    name: 'Docker',
+    category: 'Containers',
+    description: 'A hands-on Docker guide: images, Dockerfiles and multi-stage builds, networking, volumes, Compose, cleanup, and a container security lab from root baseline to hardened runtime.',
+    stack: ['Docker', 'Compose', 'Nginx', 'Spring Boot'],
+    href: 'https://github.com/SandeepKomal/Docker',
+    image: dockerImg,
+    accent: '#2496ED',
+  },
+  {
+    name: 'Kubernetes K8s',
+    category: 'Orchestration',
+    description: 'Practical Kubernetes from kubectl basics to AWS EKS: manifests, Deployments, Services and Ingress, Kind, the AWS Load Balancer Controller, Jenkins and K8s security.',
+    stack: ['Kubernetes', 'AWS EKS', 'Kind', 'Jenkins'],
+    href: 'https://github.com/SandeepKomal/kubernetes-k8s',
+    image: kubernetesImg,
+    accent: '#6D9BFF',
   },
 ] as const;
 
