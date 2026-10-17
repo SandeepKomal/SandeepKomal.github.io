@@ -84,7 +84,9 @@ function ProjectCard({ project }: { project: Project }) {
 function useCardWidth() {
   const [width, setWidth] = useState(380);
   useEffect(() => {
-    const update = () => setWidth(Math.round(Math.min(380, Math.max(250, window.innerWidth * 0.72))));
+    // fit the card to the screen's width and height so the ring and its controls fit in one view
+    const update = () =>
+      setWidth(Math.round(Math.max(250, Math.min(380, window.innerWidth * 0.72, (window.innerHeight * 0.62) / 1.4))));
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -227,7 +229,7 @@ export default function ProjectsSection() {
     c.target = (Math.round(base / STEP) - dir) * STEP;
   };
 
-  const cardHeight = Math.round(cardWidth * 1.3);
+  const cardHeight = Math.round(cardWidth * 1.4);
 
   return (
     <section id="projects" className="relative overflow-hidden bg-[#0C0C0C] px-5 pt-24 sm:px-8 sm:pt-32 md:px-10 md:pt-40">
@@ -251,7 +253,7 @@ export default function ProjectsSection() {
           if (e.key === 'ArrowLeft') go(-1);
         }}
         className="relative mx-auto flex touch-pan-y select-none items-center justify-center outline-none"
-        style={{ height: cardHeight + 140, perspective: '1600px', perspectiveOrigin: '50% 40%' }}
+        style={{ height: cardHeight + 70, perspective: '1600px', perspectiveOrigin: '50% 40%' }}
       >
         <div
           ref={ringRef}
@@ -283,7 +285,7 @@ export default function ProjectsSection() {
         />
       </div>
 
-      <div className="relative z-10 -mt-2 flex items-center justify-center gap-6 pb-24 sm:pb-32">
+      <div className="relative z-10 flex items-center justify-center gap-6 pb-24 sm:pb-32">
         <button
           type="button"
           onClick={() => go(-1)}
