@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import FadeIn from '../components/FadeIn';
 import { PROJECTS } from '../content';
@@ -268,12 +268,7 @@ export default function ProjectsSection() {
               key={project.name}
               ref={(el) => (cardRefs.current[i] = el)}
               className="absolute inset-0"
-              style={
-                {
-                  transform: `rotateY(${i * STEP}deg) translateZ(${radius}px)`,
-                  willChange: 'transform, opacity',
-                } as CSSProperties
-              }
+              style={{ transform: `rotateY(${i * STEP}deg) translateZ(${radius}px)` }}
               aria-hidden={i !== active}
             >
               <ProjectCard project={project} />
