@@ -111,7 +111,7 @@ export default function TechCursor() {
           motes.splice(i, 1);
           continue;
         }
-        // snap to a pixel grid and fade out in ordered steps, like the hero's dither
+        // snap to a pixel grid and fade out in ordered steps
         const k = m.life / m.max;
         ctx.globalAlpha = Math.ceil(k * 4) / 4;
         ctx.fillStyle = m.c;

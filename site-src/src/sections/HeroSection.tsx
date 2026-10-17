@@ -2,13 +2,13 @@ import FadeIn from '../components/FadeIn';
 import Magnet from '../components/Magnet';
 import ContactButton from '../components/ContactButton';
 import LivePortrait from '../components/LivePortrait';
-import DitherScan from '../components/DitherScan';
+import TerminalLogs from '../components/TerminalLogs';
 import { HERO_TAGLINE, NAV_LINKS } from '../content';
 
 export default function HeroSection() {
   return (
     <section className="relative flex h-screen flex-col" style={{ overflowX: 'clip' }}>
-      <DitherScan className="pointer-events-none absolute inset-0 h-full w-full" />
+      <TerminalLogs className="pointer-events-none absolute inset-0 h-full w-full" />
       <FadeIn delay={0} y={-20} className="relative z-[1]">
         <nav className="flex justify-between px-6 pt-6 md:px-10 md:pt-8">
           {NAV_LINKS.map((link) => (
