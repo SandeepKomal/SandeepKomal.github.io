@@ -10,7 +10,8 @@ import { PROJECTS } from '../content';
 type Project = (typeof PROJECTS)[number];
 
 const STEP = 360 / PROJECTS.length;
-const AUTO_SPEED = 7; // degrees per second
+const AUTO_SPEED = 14; // degrees per second
+const TILT = -14; // look down on the ring a little so the cards at the back show above the front ones
 const MONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
 function ProjectCard({ project }: { project: Project }) {
@@ -82,11 +83,11 @@ function ProjectCard({ project }: { project: Project }) {
 }
 
 function useCardWidth() {
-  const [width, setWidth] = useState(380);
+  const [width, setWidth] = useState(260);
   useEffect(() => {
     // fit the card to the screen's width and height so the ring and its controls fit in one view
     const update = () =>
-      setWidth(Math.round(Math.max(250, Math.min(380, window.innerWidth * 0.72, (window.innerHeight * 0.62) / 1.4))));
+      setWidth(Math.round(Math.max(190, Math.min(260, window.innerWidth * 0.5, (window.innerHeight * 0.46) / 1.4))));
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
@@ -101,7 +102,7 @@ export default function ProjectsSection() {
   const ctrl = useRef({ angle: 0, velocity: 0, target: null as number | null, hover: false, dragging: false });
   const [active, setActive] = useState(0);
   const cardWidth = useCardWidth();
-  const radius = Math.round((cardWidth / 2 / Math.tan(Math.PI / PROJECTS.length)) * 1.22);
+  const radius = Math.round((cardWidth / 2 / Math.tan(Math.PI / PROJECTS.length)) * 2.1);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -116,14 +117,15 @@ export default function ProjectsSection() {
     let shown = -1;
 
     const render = () => {
-      ring.style.transform = `translateZ(${-radius}px) rotateX(-6deg) rotateY(${c.angle}deg)`;
+      ring.style.transform = `translateZ(${-radius}px) rotateX(${TILT}deg) rotateY(${c.angle}deg)`;
       cardRefs.current.forEach((el, i) => {
         if (!el) return;
         // 1 when the card faces the viewer, -1 when it is at the back of the ring
         const facing = Math.cos(((i * STEP + c.angle) * Math.PI) / 180);
-        el.style.opacity = String(0.28 + 0.72 * Math.max(0, facing) ** 1.5);
-        el.style.filter = `brightness(${0.55 + 0.45 * Math.max(0, facing)})`;
+        el.style.opacity = String(0.6 + 0.4 * Math.max(0, facing));
+        el.style.filter = `brightness(${0.6 + 0.4 * Math.max(0, facing)})`;
         el.style.pointerEvents = facing > 0.7 ? 'auto' : 'none';
+        el.toggleAttribute('data-front', facing > 0.85);
       });
       const front = ((Math.round(-c.angle / STEP) % PROJECTS.length) + PROJECTS.length) % PROJECTS.length;
       if (front !== shown) {
@@ -194,7 +196,8 @@ export default function ProjectsSection() {
         moved = 0;
       }
     };
-    const onEnter = () => (c.hover = true);
+    // pause only while the cursor rests on the front card, so it can be read and clicked
+    const onHover = (e: PointerEvent) => (c.hover = !!(e.target as Element | null)?.closest?.('[data-front]'));
     const onLeave = () => (c.hover = false);
 
     stage.addEventListener('pointerdown', onDown);
@@ -202,7 +205,7 @@ export default function ProjectsSection() {
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
     stage.addEventListener('click', onClick, true);
-    stage.addEventListener('pointerenter', onEnter);
+    stage.addEventListener('pointermove', onHover);
     stage.addEventListener('pointerleave', onLeave);
     const io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting));
     io.observe(stage);
@@ -217,7 +220,7 @@ export default function ProjectsSection() {
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
       stage.removeEventListener('click', onClick, true);
-      stage.removeEventListener('pointerenter', onEnter);
+      stage.removeEventListener('pointermove', onHover);
       stage.removeEventListener('pointerleave', onLeave);
     };
   }, [radius]);
@@ -253,7 +256,7 @@ export default function ProjectsSection() {
           if (e.key === 'ArrowLeft') go(-1);
         }}
         className="relative mx-auto flex touch-pan-y select-none items-center justify-center outline-none"
-        style={{ height: cardHeight + 70, perspective: '1600px', perspectiveOrigin: '50% 40%' }}
+        style={{ height: cardHeight + 70 + Math.round(radius * 0.5), perspective: '1600px', perspectiveOrigin: '50% 40%' }}
       >
         <div
           ref={ringRef}
