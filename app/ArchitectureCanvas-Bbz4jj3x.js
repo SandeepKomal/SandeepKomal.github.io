@@ -1,4 +1,4 @@
-import{r as Ni,j as In}from"./index-C8Qkw0ta.js";/**
+import{r as Ni,j as In}from"./index-CxDSuxwM.js";/**
  * @license
  * Copyright 2010-2024 Three.js Authors
  * SPDX-License-Identifier: MIT
